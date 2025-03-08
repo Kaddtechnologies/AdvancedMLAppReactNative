@@ -1,4 +1,4 @@
-package com.kaddatechnologies.advancedmlappreactnative
+package com.deacon.admin.maui.app
 
 import android.app.Application
 import android.content.res.Configuration

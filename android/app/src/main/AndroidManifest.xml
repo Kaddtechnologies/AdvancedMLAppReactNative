@@ -24,7 +24,7 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="com.kaddatechnologies.advancedmlappreactnative"/>
+        <data android:scheme="com.deacon.admin.maui.app"/>
       </intent-filter>
     </activity>
   </application>

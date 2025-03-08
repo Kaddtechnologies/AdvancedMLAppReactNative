@@ -86,9 +86,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.kaddatechnologies.advancedmlappreactnative'
+    namespace 'com.deacon.admin.maui.app'
     defaultConfig {
-        applicationId 'com.kaddatechnologies.advancedmlappreactnative'
+        applicationId 'com.deacon.admin.maui.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
