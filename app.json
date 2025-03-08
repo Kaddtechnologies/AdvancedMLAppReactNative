@@ -2,40 +2,22 @@
   "expo": {
     "name": "advancedmlappreactnative",
     "slug": "advancedmlappreactnative",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true
+    "expo-splash-screen": {
+      "backgroundColor": "#38302b",
+      "image": "./assets/images/splash-icon.png",
+      "dark": {
+        "image": "./assets/images/splash-icon-dark.png",
+        "backgroundColor": "#000000"
+      },
+      "imageWidth": 750
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ]
-    ],
-    "experiments": {
-      "typedRoutes": true
+      "versionCode": 2
     }
   }
 }

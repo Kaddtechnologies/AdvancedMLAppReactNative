@@ -1,0 +1,63 @@
+{
+  "cli": {
+    "version": ">= 5.9.1"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "gradleCommand": ":app:assembleDebug",
+        "buildType": "apk"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle",
+        "gradleCommand": ":app:bundleRelease",
+        "credentialsSource": "local",
+        "releaseChannel": "production"
+      }
+    },
+    "firebase": {
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease",
+        "credentialsSource": "local",
+        "releaseChannel": "firebase",
+        "distribution": "internal"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "production"
+      }
+    }
+  },
+  "android": {
+    "credentialsSource": "local",
+    "releaseChannel": "default",
+    "cache": {
+      "key": "android-v1"
+    },
+    "build": {
+      "release": {
+        "keystore": {
+          "keystorePath": "./android/app/release.keystore",
+          "keystorePassword": "t3b3l8a1",
+          "keyAlias": "release",
+          "keyPassword": "t3b3l8a1"
+        }
+      }
+    }
+  }
+}
