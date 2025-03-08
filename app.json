@@ -2,7 +2,7 @@
   "expo": {
     "name": "advancedmlappreactnative",
     "slug": "advancedmlappreactnative",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,7 +17,7 @@
       "imageWidth": 750
     },
     "android": {
-      "versionCode": 2
+      "versionCode": 3
     }
   }
 }
