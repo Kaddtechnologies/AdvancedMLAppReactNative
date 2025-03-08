@@ -1,39 +1,91 @@
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
+import { useColorScheme } from 'react-native';
+import { Colors } from '../constants/Colors';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { useAppContext } from '../contexts/AppContext';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+export {
+  // Catch any errors thrown by the Layout component.
+  ErrorBoundary,
+} from 'expo-router';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+export const unstable_settings = {
+  // Ensure that reloading on `/modal` keeps a back button present.
+  initialRouteName: '(tabs)',
+};
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  const { isLoading } = useAppContext();
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
+  // If the app is still loading, show nothing
+  if (isLoading) {
     return null;
   }
 
+  return <RootLayoutNav />;
+}
+
+function RootLayoutNav() {
+  const colorScheme = useColorScheme() ?? 'dark';
+  const colors = Colors[colorScheme];
+
+  // Always use dark theme for this app
+  const theme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      background: colors.background,
+      card: colors.background,
+      text: colors.text,
+      border: 'transparent',
+      primary: colors.accent,
+    },
+  };
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={theme}>
+      <StatusBar style="light" />
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+        <Stack.Screen
+          name="test-session/[id]"
+          options={{
+            title: 'Test Session',
+            headerStyle: {
+              backgroundColor: colors.background,
+            },
+            headerTintColor: colors.text,
+            headerBackTitle: 'Back',
+            presentation: 'card',
+          }}
+        />
+        <Stack.Screen
+          name="chat/[id]"
+          options={{
+            title: 'Chat',
+            headerStyle: {
+              backgroundColor: colors.background,
+            },
+            headerTintColor: colors.text,
+            headerBackTitle: 'Back',
+            presentation: 'card',
+          }}
+        />
+        <Stack.Screen
+          name="metric-detail/[id]"
+          options={{
+            title: 'Metric Detail',
+            headerStyle: {
+              backgroundColor: colors.background,
+            },
+            headerTintColor: colors.text,
+            headerBackTitle: 'Back',
+            presentation: 'card',
+          }}
+        />
       </Stack>
-      <StatusBar style="auto" />
     </ThemeProvider>
   );
 }
