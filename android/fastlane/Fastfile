@@ -174,7 +174,7 @@ platform :android do
     # Clean the build
     UI.message("Cleaning Android build...")
     Dir.chdir(android_dir) do
-      sh("gradlew.bat clean")
+      sh("./gradlew clean")
     end
 
     # Build release APK with optimizations
@@ -183,11 +183,11 @@ platform :android do
       # Clean only if needed
       if options[:clean]
         UI.message("Cleaning previous build...")
-        sh("gradlew.bat clean")
+        sh("./gradlew clean")
       end
 
       # Build with optimizations
-      sh("gradlew.bat assembleRelease " +
+      sh("./gradlew assembleRelease " +
          "--parallel " +        # Enable parallel project execution
          "--max-workers=4 " +   # Limit workers based on CPU cores
          "--profile"           # Generate build performance report
