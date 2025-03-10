@@ -33,30 +33,6 @@
         "releaseChannel": "production",
         "cache": {
           "key": "android-v1"
-        },
-        "keystore": {
-          "keystorePath": "./android/app/release.keystore",
-          "keystorePassword": "t3b3l8a1",
-          "keyAlias": "release",
-          "keyPassword": "t3b3l8a1"
-        }
-      }
-    },
-    "firebase": {
-      "android": {
-        "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease",
-        "credentialsSource": "local",
-        "releaseChannel": "firebase",
-        "distribution": "internal",
-        "cache": {
-          "key": "android-v1"
-        },
-        "keystore": {
-          "keystorePath": "./android/app/release.keystore",
-          "keystorePassword": "t3b3l8a1",
-          "keyAlias": "release",
-          "keyPassword": "t3b3l8a1"
         }
       }
     }

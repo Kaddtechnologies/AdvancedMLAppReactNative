@@ -39,6 +39,14 @@ Build the Android app using gradlew
 
 Deploy to Firebase App Distribution
 
+### android simple_build
+
+```sh
+[bundle exec] fastlane android simple_build
+```
+
+Simple build without deployment - for testing build configuration
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

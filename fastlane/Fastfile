@@ -32,26 +32,19 @@ platform :android do
     package_json['version'] = new_version
     File.write(package_json_path, JSON.pretty_generate(package_json))
 
-    # Update version in app.json
+    # Update version and versionCode in app.json
     app_json_path = File.join(ENV["PROJECT_ROOT"], 'app.json')
     app_json = JSON.parse(File.read(app_json_path))
     app_json['expo']['version'] = new_version
-
-    # Ensure android section exists
-    app_json['expo']['android'] = {} unless app_json['expo'].key?('android')
-
-    # Get current versionCode or initialize to 1 if it doesn't exist
-    current_version_code = app_json['expo']['android']['versionCode'] || 1
+    # Increment the versionCode
+    current_version_code = app_json['expo']['android']['versionCode']
     new_version_code = current_version_code + 1
     app_json['expo']['android']['versionCode'] = new_version_code
-
-    # Write updated app.json
     File.write(app_json_path, JSON.pretty_generate(app_json))
 
     UI.message("Version incremented from #{current_version} to #{new_version}")
     UI.message("Android versionCode incremented from #{current_version_code} to #{new_version_code}")
     UI.message("Updated version and versionCode in both package.json and app.json")
-    UI.message("Added 'android' section to app.json if it didn't exist")
 
     # Split for build number if it exists
     version_parts = new_version.split('+')
@@ -171,23 +164,14 @@ platform :android do
       UI.user_error!("Android directory not found at path: #{android_dir}. Please ensure PROJECT_ROOT is set correctly in .env")
     end
 
-    # Clean the build
-    UI.message("Cleaning Android build...")
-    Dir.chdir(android_dir) do
-      sh("./gradlew clean")
-    end
+    # Skip cleaning as it's causing issues
+    UI.message("Skipping clean step due to configuration issues...")
 
     # Build release APK with optimizations
     UI.message("Building release APK with performance optimizations...")
     Dir.chdir(android_dir) do
-      # Clean only if needed
-      if options[:clean]
-        UI.message("Cleaning previous build...")
-        sh("./gradlew clean")
-      end
-
       # Build with optimizations
-      sh("./gradlew assembleRelease " +
+      sh("gradlew.bat assembleRelease " +
          "--parallel " +        # Enable parallel project execution
          "--max-workers=4 " +   # Limit workers based on CPU cores
          "--profile"           # Generate build performance report
@@ -279,6 +263,35 @@ platform :android do
       UI.success("Successfully deployed version #{new_version} to Firebase App Distribution")
     rescue => e
       UI.error("Error during deployment: #{e.message}")
+      raise e
+    end
+  end
+  desc "Simple build without deployment - for testing build configuration"
+  lane :simple_build do
+    begin
+      UI.message("Starting simple build process...")
+      UI.message("Current directory: #{Dir.pwd}")
+      UI.message("Project root: #{ENV["PROJECT_ROOT"]}")
+
+      android_dir = File.join(ENV["PROJECT_ROOT"], "android")
+      # Ensure the android directory exists
+      unless Dir.exist?(android_dir)
+        UI.user_error!("Android directory not found at path: #{android_dir}. Please ensure PROJECT_ROOT is set correctly in .env")
+      end
+
+      # Build release APK with optimizations
+      UI.message("Building release APK...")
+      Dir.chdir(android_dir) do
+        sh("gradlew.bat assembleRelease")
+      end
+
+      # Find the built APK
+      latest_apk = find_latest_apk
+
+      UI.success("APK built successfully at: #{latest_apk}")
+      UI.success("Build completed successfully!")
+    rescue => e
+      UI.error("Error during build: #{e.message}")
       raise e
     end
   end

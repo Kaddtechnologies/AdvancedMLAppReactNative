@@ -2,22 +2,23 @@
   "expo": {
     "name": "advancedmlappreactnative",
     "slug": "advancedmlappreactnative",
-    "version": "1.0.5",
+    "version": "2.0.18",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "expo-splash-screen": {
-      "backgroundColor": "#38302b",
-      "image": "./assets/images/splash-icon.png",
-      "dark": {
-        "image": "./assets/images/splash-icon-dark.png",
-        "backgroundColor": "#000000"
-      },
-      "imageWidth": 750
-    },
     "android": {
-      "versionCode": 4
-    }
+      "versionCode": 22,
+      "package": "com.deacon.admin.maui.app"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c349099f-9f22-45aa-9b3d-11707ee31258"
+      }
+    },
+    "plugins": [
+      "expo-font",
+      "expo-secure-store"
+    ]
   }
 }

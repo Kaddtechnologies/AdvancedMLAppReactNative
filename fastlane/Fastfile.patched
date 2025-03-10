@@ -1,0 +1,333 @@
+require 'json'
+require 'dotenv'
+require 'fileutils'
+
+default_platform(:android)
+
+platform :android do
+  before_all do
+    Dotenv.load('../.env', 'fastlane/.env')
+    ENV["LANG"] = "en_US.UTF-8"
+    ENV["LANGUAGE"] = "en_US.UTF-8"
+    ENV["LC_ALL"] = "en_US.UTF-8"
+  end
+
+  desc "Determine release name and increment version"
+  lane :determine_release_name do
+    # Read version from package.json
+    package_json_path = File.join(ENV["PROJECT_ROOT"], 'package.json')
+    package_json = JSON.parse(File.read(package_json_path))
+    current_version = package_json['version']
+
+    # Split version into parts (major.minor.patch)
+    version_parts = current_version.split('.')
+
+    # Increment patch version
+    version_parts[2] = (version_parts[2].to_i + 1).to_s
+
+    # Create new version string
+    new_version = version_parts.join('.')
+
+    # Update version in package.json
+    package_json['version'] = new_version
+    File.write(package_json_path, JSON.pretty_generate(package_json))
+
+    # Update version and versionCode in app.json
+    app_json_path = File.join(ENV["PROJECT_ROOT"], 'app.json')
+    app_json = JSON.parse(File.read(app_json_path))
+    app_json['expo']['version'] = new_version
+    # Increment the versionCode
+    current_version_code = app_json['expo']['android']['versionCode']
+    new_version_code = current_version_code + 1
+    app_json['expo']['android']['versionCode'] = new_version_code
+    File.write(app_json_path, JSON.pretty_generate(app_json))
+
+    UI.message("Version incremented from #{current_version} to #{new_version}")
+    UI.message("Android versionCode incremented from #{current_version_code} to #{new_version_code}")
+    UI.message("Updated version and versionCode in both package.json and app.json")
+
+    # Split for build number if it exists
+    version_parts = new_version.split('+')
+    version_name = version_parts[0]
+    build_number = version_parts.length > 1 ? version_parts[1].to_i : 1
+
+    UI.message("Using version: #{version_name}, Build number: #{build_number}")
+
+    {version: version_name, build_number: build_number}
+  end
+
+  desc "Find APK using multiple search strategies"
+  private_lane :find_latest_apk do |options|
+    UI.message("Starting comprehensive APK search...")
+
+    # List of potential base directories to search
+    search_dirs = [
+      # From PROJECT_ROOT if set
+      ENV["PROJECT_ROOT"],
+      # Relative to fastlane directory
+      File.expand_path('..', Dir.pwd),
+      # Additional fallback paths
+      File.expand_path('../..', Dir.pwd)
+    ].compact.uniq
+
+    # Common APK locations relative to base dir - ordered from most specific to least specific
+    apk_patterns = [
+      "android/app/build/outputs/apk/release/app-release.apk",
+      "android/app/build/outputs/apk/release/*.apk",
+      "android/app/build/outputs/apk/*/app-release.apk",
+      "android/app/build/outputs/apk/*/*.apk"
+    ]
+
+    UI.message("Search directories:")
+    search_dirs.each { |dir| UI.message("  - #{dir}") }
+
+    found_apks = []
+
+    search_dirs.each do |base_dir|
+      next unless base_dir && Dir.exist?(base_dir)
+      UI.message("Searching in base directory: #{base_dir}")
+
+      apk_patterns.each do |pattern|
+        full_pattern = File.join(base_dir, pattern)
+        UI.message("  Trying pattern: #{full_pattern}")
+
+        # Handle both glob patterns and direct file paths
+        if pattern.include?('*')
+          # For glob patterns
+          begin
+            require 'timeout'
+            Timeout.timeout(30) do  # Set 30 second timeout
+              # Use a more controlled directory traversal
+              Dir.glob(full_pattern, File::FNM_DOTMATCH).each do |apk_path|
+                if File.file?(apk_path) && File.readable?(apk_path)
+                  UI.message("    Found APK: #{apk_path}")
+                  found_apks << { path: apk_path, time: File.mtime(apk_path) }
+                end
+              end
+            end
+          rescue Timeout::Error
+            UI.important("Search timed out for pattern: #{full_pattern}")
+            next
+          rescue => e
+            UI.important("Error searching with pattern #{full_pattern}: #{e.message}")
+            next
+          end
+        else
+          # For direct file paths
+          direct_path = full_pattern
+          if File.exist?(direct_path)
+            UI.message("    Found APK: #{direct_path}")
+            found_apks << { path: direct_path, time: File.mtime(direct_path) }
+          end
+        end
+      end
+    end
+
+    if found_apks.empty?
+      UI.user_error!("No APK files found in any of the search locations!")
+    end
+
+    # Sort by modification time and get the most recent
+    latest_apk = found_apks.max_by { |apk| apk[:time] }
+    absolute_path = File.absolute_path(latest_apk[:path])
+
+    # Verify the file exists and is readable
+    unless File.exist?(absolute_path) && File.readable?(absolute_path)
+      UI.user_error!("Found APK at #{absolute_path} but it's not accessible!")
+    end
+
+    # Get file size for validation
+    file_size = File.size(absolute_path)
+    UI.message("Latest APK details:")
+    UI.message("  Path: #{absolute_path}")
+    UI.message("  Size: #{file_size} bytes")
+    UI.message("  Modified: #{latest_apk[:time]}")
+
+    if file_size < 1024 * 1024  # Less than 1MB
+      UI.important("Warning: APK file size is unusually small!")
+    end
+
+    absolute_path
+  end
+
+  desc "Apply patches to fix Gradle compatibility issues"
+  lane :apply_patches do
+    UI.message("Applying patches to fix Gradle compatibility issues...")
+
+    android_dir = File.join(ENV["PROJECT_ROOT"], "android")
+    # Ensure the android directory exists
+    unless Dir.exist?(android_dir)
+      UI.user_error!("Android directory not found at path: #{android_dir}. Please ensure PROJECT_ROOT is set correctly in .env")
+    end
+
+    # Check if PowerShell is available
+    has_powershell = system("where powershell > nul 2>&1")
+
+    if has_powershell
+      UI.message("Using PowerShell to apply patches...")
+      Dir.chdir(android_dir) do
+        sh("powershell -ExecutionPolicy Bypass -File apply-patches.ps1")
+      end
+    else
+      UI.message("Using batch script to apply patches...")
+      Dir.chdir(android_dir) do
+        sh("apply-patches.bat")
+      end
+    end
+
+    UI.success("Patches applied successfully!")
+  end
+
+  desc "Build the Android app using gradlew"
+  lane :build do |options|
+    version_info = determine_release_name
+
+    # Log current directory and project root
+    UI.message("Current directory: #{Dir.pwd}")
+    UI.message("Project root: #{ENV["PROJECT_ROOT"]}")
+
+    android_dir = File.join(ENV["PROJECT_ROOT"], "android")
+    # Ensure the android directory exists
+    unless Dir.exist?(android_dir)
+      UI.user_error!("Android directory not found at path: #{android_dir}. Please ensure PROJECT_ROOT is set correctly in .env")
+    end
+
+    # Apply patches to fix Gradle compatibility issues
+    apply_patches
+
+    # Skip cleaning as it's causing issues
+    UI.message("Skipping clean step due to configuration issues...")
+
+    # Build release APK with optimizations
+    UI.message("Building release APK with performance optimizations...")
+    Dir.chdir(android_dir) do
+      # Build with optimizations
+      sh("gradlew.bat assembleRelease " +
+         "--parallel " +        # Enable parallel project execution
+         "--max-workers=4 " +   # Limit workers based on CPU cores
+         "--profile"           # Generate build performance report
+      )
+    end
+
+    # Find the built APK
+    latest_apk = find_latest_apk
+
+    # Set the APK path in the environment - use the absolute path
+    ENV["APK_PATH"] = latest_apk
+    UI.message("Set APK_PATH to: #{ENV["APK_PATH"]}")
+
+    UI.success("APK built at: #{latest_apk}")
+    version_info
+  end
+
+  desc "Deploy to Firebase App Distribution"
+  lane :deploy_to_firebase do
+    begin
+      version_info = build
+      new_version = version_info[:version]
+      new_build_number = version_info[:build_number]
+
+      # Comprehensive APK verification
+      UI.message("Starting APK verification process...")
+
+      # First try the ENV path
+      apk_path = ENV["APK_PATH"]
+      UI.message("Checking ENV[APK_PATH]: #{apk_path}")
+
+      # If ENV path doesn't exist or isn't valid, try to find it
+      unless apk_path && File.exist?(apk_path) && File.readable?(apk_path)
+        UI.message("APK not found or not accessible at ENV[APK_PATH], initiating comprehensive search...")
+        apk_path = find_latest_apk
+      end
+
+      # Get absolute path and verify final state
+      absolute_apk_path = File.absolute_path(apk_path)
+      file_size = File.size(absolute_apk_path)
+
+      UI.message("APK verification complete:")
+      UI.message("  Path: #{absolute_apk_path}")
+      UI.message("  Size: #{file_size} bytes")
+      UI.message("  Last modified: #{File.mtime(absolute_apk_path)}")
+
+      # Additional validation
+      if file_size < 1024 * 1024  # Less than 1MB
+        UI.important("Warning: APK file size is unusually small!")
+      end
+
+      UI.message("Using Firebase App ID: #{ENV['FIREBASE_APP_ID']}")
+      UI.message("Using Firebase Groups: #{ENV['FIREBASE_GROUPS']}")
+
+      # Upload to Firebase
+      firebase_app_distribution(
+        app: ENV["FIREBASE_APP_ID"],
+        apk_path: absolute_apk_path,
+        release_notes: "New version #{new_version} (build #{new_build_number}) deployed via Fastlane",
+        groups: ENV["FIREBASE_GROUPS"],
+        firebase_cli_token: ENV["FIREBASE_CLI_TOKEN"]
+      )
+
+      # If we get here, the upload was successful, attempt to delete the APK
+      begin
+        if File.exist?(ENV["APK_PATH"])
+          UI.message("Attempting to delete APK after successful upload: #{ENV["APK_PATH"]}")
+
+          # Try to ensure file is not in use
+          GC.start # Force garbage collection to release any file handles
+          sleep(2) # Give system time to release handles
+
+          begin
+            File.delete(ENV["APK_PATH"])
+            UI.success("APK deleted successfully")
+          rescue Errno::EACCES, Errno::EPERM => e
+            UI.important("Warning: Could not delete APK due to permissions (#{e.message})")
+            UI.important("You may want to manually delete: #{ENV["APK_PATH"]}")
+          rescue => e
+            UI.important("Warning: Could not delete APK (#{e.message})")
+            UI.important("You may want to manually delete: #{ENV["APK_PATH"]}")
+          end
+        end
+      rescue => e
+        UI.important("Warning: Error during APK cleanup: #{e.message}")
+        UI.important("This is non-fatal as the upload was successful")
+      end
+
+      UI.success("Successfully deployed version #{new_version} to Firebase App Distribution")
+    rescue => e
+      UI.error("Error during deployment: #{e.message}")
+      raise e
+    end
+  end
+
+  desc "Simple build without deployment - for testing build configuration"
+  lane :simple_build do
+    begin
+      UI.message("Starting simple build process...")
+      UI.message("Current directory: #{Dir.pwd}")
+      UI.message("Project root: #{ENV["PROJECT_ROOT"]}")
+
+      android_dir = File.join(ENV["PROJECT_ROOT"], "android")
+      # Ensure the android directory exists
+      unless Dir.exist?(android_dir)
+        UI.user_error!("Android directory not found at path: #{android_dir}. Please ensure PROJECT_ROOT is set correctly in .env")
+      end
+
+      # Apply patches to fix Gradle compatibility issues
+      apply_patches
+
+      # Build release APK with optimizations
+      UI.message("Building release APK...")
+      Dir.chdir(android_dir) do
+        sh("gradlew.bat assembleRelease")
+      end
+
+      # Find the built APK
+      latest_apk = find_latest_apk
+
+      UI.success("APK built successfully at: #{latest_apk}")
+      UI.success("Build completed successfully!")
+    rescue => e
+      UI.error("Error during build: #{e.message}")
+      raise e
+    end
+  end
+end
