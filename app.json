@@ -2,23 +2,58 @@
   "expo": {
     "name": "advancedmlappreactnative",
     "slug": "advancedmlappreactnative",
-    "version": "2.0.18",
+    "version": "2.0.23",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "scheme": "advancedmlappreactnative",
     "android": {
-      "versionCode": 22,
-      "package": "com.deacon.admin.maui.app"
+      "versionCode": 27,
+      "package": "com.deacons.admin.app",
+      "googleServicesFile": "./credentials.json"
+    },
+    "ios": {
+      "bundleIdentifier": "com.deacons.admin.app"
     },
     "extra": {
       "eas": {
         "projectId": "c349099f-9f22-45aa-9b3d-11707ee31258"
+      },
+      "firebase": {
+        "apiKey": "AIzaSyBDcE6W1_l4_tAKSKR6icpcmpdzGizyGuw",
+        "authDomain": "official-ph-deacons-admin-app.firebaseapp.com",
+        "projectId": "official-ph-deacons-admin-app",
+        "storageBucket": "official-ph-deacons-admin-app.appspot.com",
+        "messagingSenderId": "1080056460636",
+        "appId": "1:1080056460636:android:dcfa6f34dce663ef507d99"
       }
     },
     "plugins": [
       "expo-font",
-      "expo-secure-store"
-    ]
+      "expo-secure-store",
+      "expo-router",
+      [
+        "sentry-expo",
+        {
+          "organization": "deacons-app",
+          "project": "deacons-app-react-native",
+          "hooks": {
+            "postPublish": [
+              {
+                "file": "sentry-expo/upload-sourcemaps",
+                "config": {
+                  "organization": "deacons-app",
+                  "project": "deacons-app-react-native"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    ],
+    "web": {
+      "bundler": "metro"
+    }
   }
 }

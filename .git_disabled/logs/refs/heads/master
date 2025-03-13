@@ -1,0 +1,5 @@
+0000000000000000000000000000000000000000 3ae953bfaf3eae4a8791950a8961f4965c53e57a DavidML3 <DavidML3@yahoo.com> 1741413718 -0600	commit (initial): Initial commit
+3ae953bfaf3eae4a8791950a8961f4965c53e57a 335342e8b5cd50da5cbeac069edc73d31588c9f0 DavidML3 <DavidML3@yahoo.com> 1741418738 -0600	commit: Refactor project configuration and dependencies
+335342e8b5cd50da5cbeac069edc73d31588c9f0 b8d2ac88d93122e7e0ec35a3f9531aa866a85936 DavidML3 <DavidML3@yahoo.com> 1741419207 -0600	commit: Bump version to 1.0.4 and fix Android manifest icon configuration
+b8d2ac88d93122e7e0ec35a3f9531aa866a85936 5105cceea5941ca3d81cff9d7342108a99e33b1f DavidML3 <DavidML3@yahoo.com> 1741419502 -0600	commit: Initial commit
+5105cceea5941ca3d81cff9d7342108a99e33b1f 76c5fd7057c9cdd49bbdb29c09cd58b05fa51954 DavidML3 <DavidML3@yahoo.com> 1741419698 -0600	commit: com.kaddatechnologies.advancedmlappreactnative

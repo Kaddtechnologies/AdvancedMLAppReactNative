@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  Clipboard
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import GradientBackground from '../../components/ui/GradientBackground';
@@ -19,7 +20,6 @@ import { Colors } from '../../constants/Colors';
 import { useAppContext } from '../../contexts/AppContext';
 import * as SecureStore from 'expo-secure-store';
 import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
 
 // Settings sections
 const SECTIONS = {
@@ -78,20 +78,15 @@ export default function SettingsScreen() {
       // Convert to JSON
       const jsonData = JSON.stringify(exportData, null, 2);
 
-      // Create a temporary file
-      const fileUri = `${FileSystem.cacheDirectory}ml_testing_export_${Date.now()}.json`;
-      await FileSystem.writeAsStringAsync(fileUri, jsonData);
+      // Copy to clipboard
+      Clipboard.setString(jsonData);
 
-      // Share the file
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(fileUri, {
-          mimeType: 'application/json',
-          dialogTitle: 'Export ML Testing Data',
-          UTI: 'public.json'
-        });
-      } else {
-        Alert.alert('Error', 'Sharing is not available on this device');
-      }
+      // Show success message
+      Alert.alert(
+        'Data Exported',
+        'The data has been copied to your clipboard. You can now paste it into a text editor or other app.',
+        [{ text: 'OK' }]
+      );
     } catch (error) {
       console.error('Error exporting data:', error);
       Alert.alert('Error', 'Failed to export data');

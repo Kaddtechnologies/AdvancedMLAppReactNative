@@ -1,60 +1,47 @@
 import React from 'react';
-import { StyleSheet, View, ViewStyle } from 'react-native';
+import { View, ViewStyle, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useColorScheme } from 'react-native';
 import { Colors } from '../../constants/Colors';
+import { useColorScheme } from 'react-native';
 import { BorderRadius, Shadows } from '../../constants/Theme';
-import { BlurView } from 'expo-blur';
 
 interface GradientCardProps {
   children: React.ReactNode;
   style?: ViewStyle;
-  blurIntensity?: number;
   withShadow?: boolean;
 }
 
-export const GradientCard: React.FC<GradientCardProps> = ({
+const GradientCard: React.FC<GradientCardProps> = ({
   children,
   style,
-  blurIntensity = 20,
-  withShadow = true,
+  withShadow = false,
 }) => {
-  const colorScheme = useColorScheme() ?? 'light';
+  const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
-  const gradientConfig = colors.cardBackgroundGradient;
+  const gradientColors = colors.cardBackgroundGradient.colors as [string, string];
 
   return (
-    <View style={[withShadow && Shadows.medium, styles.container, style]}>
-      <BlurView intensity={blurIntensity} tint="dark" style={styles.blurView}>
-        <LinearGradient
-          colors={gradientConfig.colors}
-          start={gradientConfig.start}
-          end={gradientConfig.end}
-          style={styles.gradient}
-        >
-          {children}
-        </LinearGradient>
-      </BlurView>
+    <View style={[styles.container, withShadow && Shadows.small, style]}>
+      <LinearGradient
+        colors={gradientColors}
+        start={colors.cardBackgroundGradient.start}
+        end={colors.cardBackgroundGradient.end}
+        style={styles.gradient}
+      >
+        {children}
+      </LinearGradient>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: BorderRadius.large,
+    borderRadius: BorderRadius.medium,
     overflow: 'hidden',
-    margin: 8,
-  },
-  blurView: {
-    width: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    borderRadius: BorderRadius.large,
   },
   gradient: {
-    width: '100%',
-    height: '100%',
     padding: 16,
+    borderRadius: BorderRadius.medium,
   },
 });
 

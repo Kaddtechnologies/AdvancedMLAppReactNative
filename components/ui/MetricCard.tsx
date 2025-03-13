@@ -15,6 +15,7 @@ interface MetricCardProps {
   trend?: 'up' | 'down' | 'neutral';
   trendValue?: string;
   onPress?: () => void;
+  instructions?: string;
 }
 
 export const MetricCard: React.FC<MetricCardProps> = ({
@@ -26,6 +27,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   trend,
   trendValue,
   onPress,
+  instructions,
 }) => {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
@@ -81,6 +83,12 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           {description}
         </StyledText>
       )}
+
+      {instructions && (
+        <StyledText variant="bodySmall" style={styles.instructions}>
+          {instructions}
+        </StyledText>
+      )}
     </GradientCard>
   );
 };
@@ -88,6 +96,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
 const styles = StyleSheet.create({
   container: {
     minHeight: 120,
+    padding: Spacing.m,
   },
   header: {
     flexDirection: 'row',
@@ -113,6 +122,15 @@ const styles = StyleSheet.create({
   description: {
     marginTop: Spacing.s,
     opacity: 0.7,
+  },
+  instructions: {
+    marginTop: Spacing.m,
+    opacity: 0.8,
+    fontSize: 12,
+    lineHeight: 16,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    padding: Spacing.s,
+    borderRadius: 4,
   },
 });
 

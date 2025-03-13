@@ -32,72 +32,89 @@ const textBrown = '#5A4A40';
 export const Colors = {
   // We'll maintain light/dark structure for compatibility
   light: {
-    text: textWhite,
-    textSecondary: textBrown,
-    background: primaryDarkBrown,
+    text: '#000',
+    textSecondary: '#666',
+    textOnPrimary: '#fff',
+    background: '#f5f5f5',
     backgroundGradient: {
-      colors: [primaryDarkBrown, primaryLightBrown],
+      colors: ['#f5f5f5', '#e5e5e5'],
       start: { x: 0, y: 0 },
-      end: { x: 0, y: 1 }
+      end: { x: 0, y: 1 },
     },
     secondaryBackgroundGradient: {
-      colors: [secondaryDarkBrown, secondaryLightBrown],
+      colors: ['#e5e5e5', '#d5d5d5'],
       start: { x: 0, y: 0 },
-      end: { x: 0, y: 1 }
+      end: { x: 0, y: 1 },
+    },
+    primaryGradient: {
+      colors: ['#007AFF', '#0055FF'],
+      start: { x: 0, y: 0 },
+      end: { x: 1, y: 1 },
+    },
+    secondaryGradient: {
+      colors: ['#E8E8E8', '#D1D1D1'],
+      start: { x: 0, y: 0 },
+      end: { x: 1, y: 1 },
     },
     cardBackgroundGradient: {
-      colors: [cardDarkBrown, cardLightBrown],
+      colors: ['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.8)'],
       start: { x: 0, y: 0 },
-      end: { x: 0, y: 1 }
-    },
-    buttonGradient: {
-      colors: [accentCopperLight, accentCopper],
-      type: 'radial'
+      end: { x: 0, y: 1 },
     },
     navBarGradient: {
-      colors: [primaryLightBrown, primaryDarkBrown],
+      colors: ['rgba(255,255,255,0.9)', 'rgba(255,255,255,0.8)'],
       start: { x: 0, y: 0 },
-      end: { x: 0, y: 1 }
+      end: { x: 0, y: 1 },
     },
-    tint: accentCopper,
-    accent: accentCopper,
-    accentSecondary: accentWarmGray,
-    tabIconDefault: accentWarmGray,
-    tabIconSelected: accentCopper,
+    accent: '#007AFF',
+    accentSecondary: '#5856D6',
+    tint: '#007AFF',
+    tabIconDefault: '#ccc',
+    tabIconSelected: '#007AFF',
   },
   // For this app, dark mode will be the same as light mode since the design is dark-themed
   dark: {
-    text: textWhite,
-    textSecondary: textBrown,
-    background: primaryDarkBrown,
+    text: '#fff',
+    textSecondary: '#aaa',
+    textOnPrimary: '#fff',
+    background: '#000',
     backgroundGradient: {
-      colors: [primaryDarkBrown, primaryLightBrown],
+      colors: ['#1a1a1a', '#000000'],
       start: { x: 0, y: 0 },
-      end: { x: 0, y: 1 }
+      end: { x: 0, y: 1 },
     },
     secondaryBackgroundGradient: {
-      colors: [secondaryDarkBrown, secondaryLightBrown],
+      colors: ['#2a2a2a', '#1a1a1a'],
       start: { x: 0, y: 0 },
-      end: { x: 0, y: 1 }
+      end: { x: 0, y: 1 },
+    },
+    primaryGradient: {
+      colors: ['#0A84FF', '#0055FF'],
+      start: { x: 0, y: 0 },
+      end: { x: 1, y: 1 },
+    },
+    secondaryGradient: {
+      colors: ['#2a2a2a', '#1a1a1a'],
+      start: { x: 0, y: 0 },
+      end: { x: 1, y: 1 },
     },
     cardBackgroundGradient: {
-      colors: [cardDarkBrown, cardLightBrown],
+      colors: ['rgba(40,40,40,0.9)', 'rgba(30,30,30,0.8)'],
       start: { x: 0, y: 0 },
-      end: { x: 0, y: 1 }
-    },
-    buttonGradient: {
-      colors: [accentCopperLight, accentCopper],
-      type: 'radial'
+      end: { x: 0, y: 1 },
     },
     navBarGradient: {
-      colors: [primaryLightBrown, primaryDarkBrown],
+      colors: ['rgba(30,30,30,0.9)', 'rgba(20,20,20,0.8)'],
       start: { x: 0, y: 0 },
-      end: { x: 0, y: 1 }
+      end: { x: 0, y: 1 },
     },
-    tint: accentCopper,
-    accent: accentCopper,
-    accentSecondary: accentWarmGray,
-    tabIconDefault: accentWarmGray,
-    tabIconSelected: accentCopper,
+    accent: '#0A84FF',
+    accentSecondary: '#5E5CE6',
+    tint: '#0A84FF',
+    tabIconDefault: '#666',
+    tabIconSelected: '#0A84FF',
   },
 };
+
+export type ColorScheme = keyof typeof Colors;
+export type ColorTheme = typeof Colors[ColorScheme];

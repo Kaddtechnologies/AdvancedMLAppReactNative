@@ -1,0 +1,8 @@
+Streamline Android project configuration and remove deployment artifacts
+
+- Removed Fastlane deployment scripts and related files
+- Cleaned up Android build configuration
+- Updated app metadata and splash screen resources
+- Simplified Gradle and build settings
+- Removed sensitive keystore and environment files
+- Adjusted Android manifest and application settings

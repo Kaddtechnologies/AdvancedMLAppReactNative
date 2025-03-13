@@ -1,143 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, ScrollView, View, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { StyleSheet, ScrollView, View, TouchableOpacity, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import GradientBackground from '../../components/ui/GradientBackground';
 import StyledText from '../../components/ui/StyledText';
 import MetricCard from '../../components/ui/MetricCard';
 import GradientCard from '../../components/ui/GradientCard';
-import GradientButton from '../../components/ui/GradientButton';
 import LineChart from '../../components/ui/LineChart';
 import { Spacing } from '../../constants/Theme';
 import { FontAwesome } from '@expo/vector-icons';
 import { useColorScheme } from 'react-native';
 import { Colors } from '../../constants/Colors';
-
-// Mock data for demonstration
-const mockMetrics = [
-  {
-    id: '1',
-    title: 'Personalization Score',
-    value: '4.2',
-    description: 'Out of 5',
-    trend: 'up',
-    trendValue: '0.3',
-  },
-  {
-    id: '2',
-    title: 'Information Recall',
-    value: '87%',
-    description: 'Accuracy rate',
-    trend: 'up',
-    trendValue: '5%',
-  },
-  {
-    id: '3',
-    title: 'Contextual Relevance',
-    value: '76',
-    description: 'Out of 100',
-    trend: 'up',
-    trendValue: '12',
-  },
-  {
-    id: '4',
-    title: 'Conversation Naturalness',
-    value: '8.3',
-    description: 'Out of 10',
-    trend: 'neutral',
-    trendValue: '0.1',
-  },
-];
-
-const mockSessions = [
-  {
-    id: '1',
-    title: 'Baseline Testing',
-    date: '2023-11-15',
-    status: 'completed',
-    metrics: {
-      accuracy: 82,
-      responseTime: 1.2,
-    },
-  },
-  {
-    id: '2',
-    title: 'Progressive Information - Session 1',
-    date: '2023-11-16',
-    status: 'completed',
-    metrics: {
-      accuracy: 85,
-      responseTime: 1.1,
-    },
-  },
-  {
-    id: '3',
-    title: 'Recall Testing',
-    date: '2023-11-18',
-    status: 'in-progress',
-    metrics: {
-      accuracy: 87,
-      responseTime: 0.9,
-    },
-  },
-];
-
-const mockChartData = [
-  { x: 1, y: 3.2 },
-  { x: 2, y: 3.5 },
-  { x: 3, y: 3.4 },
-  { x: 4, y: 3.8 },
-  { x: 5, y: 4.0 },
-  { x: 6, y: 4.2 },
-];
+import { useDashboard } from '../../hooks/useDashboard';
 
 export default function DashboardScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
+  const { loading, error, data, refresh } = useDashboard();
 
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate loading data
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const navigateToTestSession = (id: string) => {
-    router.push(`/test-session/${id}`);
+  const navigateToMetricDetail = (metricId: string) => {
+    router.push(`/metric-detail/${metricId}`);
   };
 
-  const navigateToMetricDetail = (id: string) => {
-    router.push(`/metric-detail/${id}`);
-  };
+  if (loading) {
+    return (
+      <GradientBackground>
+        <View style={styles.loadingContainer}>
+          <StyledText style={{ fontSize: 16 }}>Loading dashboard data...</StyledText>
+        </View>
+      </GradientBackground>
+    );
+  }
 
-  const startNewSession = () => {
-    // Logic to start a new test session
-    router.push('/test-sessions/new');
-  };
+  if (error) {
+    return (
+      <GradientBackground>
+        <View style={styles.errorContainer}>
+          <StyledText style={{ ...styles.errorText, fontSize: 16 }}>
+            {error}
+          </StyledText>
+          <TouchableOpacity onPress={refresh} style={styles.retryButton}>
+            <StyledText style={{ fontSize: 16 }}>Retry</StyledText>
+          </TouchableOpacity>
+        </View>
+      </GradientBackground>
+    );
+  }
 
   return (
     <GradientBackground>
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={refresh} />
+        }
+      >
         <View style={styles.header}>
-          <StyledText variant="largeHeader" weight="semibold">
+          <StyledText style={{ fontSize: 24, fontWeight: '600' }}>
             Dashboard
           </StyledText>
-          <StyledText variant="body" style={styles.subtitle}>
+          <StyledText style={styles.subtitle}>
             ML Testing Metrics Overview
+          </StyledText>
+          <StyledText style={styles.instructions}>
+            This dashboard shows how the AI system is learning and adapting to your interactions.
+            All metrics update automatically as you use the chat feature.
           </StyledText>
         </View>
 
         <View style={styles.section}>
-          <StyledText variant="sectionHeader" weight="medium" style={styles.sectionTitle}>
+          <StyledText style={{ ...styles.sectionTitle, fontSize: 18, fontWeight: '500' }}>
             Key Metrics
           </StyledText>
+          <StyledText style={styles.sectionDescription}>
+            These metrics reflect your personal interaction with the AI. Tap any card to see detailed history and insights.
+          </StyledText>
 
-          <View style={styles.metricsGrid}>
-            {mockMetrics.map((metric) => (
+          <View style={styles.metricsContainer}>
+            {data?.metrics.map((metric) => (
               <TouchableOpacity
                 key={metric.id}
                 style={styles.metricCardContainer}
@@ -147,15 +88,16 @@ export default function DashboardScreen() {
                   title={metric.title}
                   value={metric.value}
                   description={metric.description}
-                  trend={metric.trend as 'up' | 'down' | 'neutral'}
+                  trend={metric.trend}
                   trendValue={metric.trendValue}
                   icon={
                     <FontAwesome
-                      name="line-chart"
+                      name={metric.icon as any}
                       size={20}
                       color={colors.accent}
                     />
                   }
+                  instructions={getMetricInstructions(metric.title)}
                 />
               </TouchableOpacity>
             ))}
@@ -163,89 +105,52 @@ export default function DashboardScreen() {
         </View>
 
         <View style={styles.section}>
-          <StyledText variant="sectionHeader" weight="medium" style={styles.sectionTitle}>
+          <StyledText style={{ ...styles.sectionTitle, fontSize: 18, fontWeight: '500' }}>
             Learning Progress
           </StyledText>
+          <StyledText style={styles.sectionDescription}>
+            This chart shows how the AI's understanding of your needs improves over time.
+            Each point represents a test session, and the trend should increase as you interact more.
+          </StyledText>
 
-          <LineChart
-            data={mockChartData}
-            title="Personalization Score Over Time"
-            description="Tracking how well the AI tailors responses to you"
-            xAxisLabel="Test Sessions"
-            yAxisLabel="Score"
-          />
+          <GradientCard>
+            <LineChart
+              data={data?.chartData || []}
+              title="Personalization Score Over Time"
+              description="Tracking how well the AI tailors responses to you"
+              xAxisLabel="Test Sessions"
+              yAxisLabel="Score"
+            />
+          </GradientCard>
         </View>
 
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <StyledText variant="sectionHeader" weight="medium" style={styles.sectionTitle}>
-              Recent Test Sessions
-            </StyledText>
-
-            <GradientButton
-              title="New Session"
-              onPress={startNewSession}
-              size="small"
-            />
-          </View>
-
-          {mockSessions.map((session) => (
-            <TouchableOpacity
-              key={session.id}
-              onPress={() => navigateToTestSession(session.id)}
-            >
-              <GradientCard style={styles.sessionCard}>
-                <View style={styles.sessionHeader}>
-                  <StyledText variant="cardTitle" weight="medium">
-                    {session.title}
-                  </StyledText>
-                  <View style={[
-                    styles.statusBadge,
-                    { backgroundColor: session.status === 'completed' ? '#4CAF50' : '#FFC107' }
-                  ]}>
-                    <StyledText variant="secondary" weight="medium">
-                      {session.status === 'completed' ? 'Completed' : 'In Progress'}
-                    </StyledText>
-                  </View>
-                </View>
-
-                <StyledText variant="bodySmall" style={styles.sessionDate}>
-                  {new Date(session.date).toLocaleDateString()}
-                </StyledText>
-
-                <View style={styles.sessionMetrics}>
-                  <View style={styles.metricItem}>
-                    <StyledText variant="bodySmall" weight="medium">
-                      Accuracy:
-                    </StyledText>
-                    <StyledText variant="body" weight="semibold">
-                      {session.metrics.accuracy}%
-                    </StyledText>
-                  </View>
-
-                  <View style={styles.metricItem}>
-                    <StyledText variant="bodySmall" weight="medium">
-                      Response Time:
-                    </StyledText>
-                    <StyledText variant="body" weight="semibold">
-                      {session.metrics.responseTime}s
-                    </StyledText>
-                  </View>
-                </View>
-              </GradientCard>
-            </TouchableOpacity>
-          ))}
-
-          <GradientButton
-            title="View All Sessions"
-            onPress={() => router.push('/test-sessions')}
-            variant="outline"
-            style={styles.viewAllButton}
-          />
+          <StyledText style={styles.updateNote}>
+            Data updates automatically every few minutes. Pull down to refresh manually.
+          </StyledText>
+          <StyledText style={styles.lastUpdated}>
+            Last updated: {data?.lastUpdated ? new Date(data.lastUpdated).toLocaleString() : 'Never'}
+          </StyledText>
         </View>
       </ScrollView>
     </GradientBackground>
   );
+}
+
+// Helper function to get instructions for each metric
+function getMetricInstructions(metricTitle: string): string {
+  switch (metricTitle) {
+    case 'Personalization Score':
+      return 'This score increases as the AI learns your preferences and communication style. Regular chat interactions help improve this metric. A higher score means better personalized responses.';
+    case 'Information Recall':
+      return 'Shows how well the AI remembers details from your past conversations. This improves naturally as you have more chat sessions. Higher percentages mean better context retention.';
+    case 'Contextual Relevance':
+      return 'Measures the AI\'s ability to stay on topic and provide relevant responses. This improves with your feedback and corrections. A higher score indicates more accurate and focused responses.';
+    case 'Conversation Naturalness':
+      return 'Evaluates how human-like and flowing the conversations feel. This develops as the AI learns your communication patterns. Higher scores mean more natural dialogue.';
+    default:
+      return '';
+  }
 }
 
 const styles = StyleSheet.create({
@@ -254,6 +159,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: Spacing.m,
+    paddingBottom: Spacing.xxl,
   },
   header: {
     marginBottom: Spacing.l,
@@ -268,47 +174,50 @@ const styles = StyleSheet.create({
   sectionTitle: {
     marginBottom: Spacing.m,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.m,
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+  metricsContainer: {
+    flexDirection: 'column',
   },
   metricCardContainer: {
-    width: '48%',
+    width: '100%',
     marginBottom: Spacing.m,
   },
-  sessionCard: {
-    marginBottom: Spacing.m,
-  },
-  sessionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  statusBadge: {
-    paddingHorizontal: Spacing.s,
-    paddingVertical: Spacing.xs,
-    borderRadius: 12,
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.xl,
   },
-  sessionDate: {
-    opacity: 0.7,
-    marginTop: Spacing.xs,
+  errorText: {
+    textAlign: 'center',
+    marginBottom: Spacing.m,
   },
-  sessionMetrics: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  retryButton: {
+    padding: Spacing.m,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+  },
+  lastUpdated: {
+    textAlign: 'center',
+    opacity: 0.6,
+  },
+  instructions: {
     marginTop: Spacing.m,
+    opacity: 0.8,
+    lineHeight: 20,
   },
-  metricItem: {
-    alignItems: 'center',
+  sectionDescription: {
+    marginBottom: Spacing.m,
+    opacity: 0.8,
+    lineHeight: 20,
   },
-  viewAllButton: {
-    marginTop: Spacing.s,
+  updateNote: {
+    textAlign: 'center',
+    opacity: 0.8,
+    marginBottom: Spacing.s,
   },
 });

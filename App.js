@@ -1,63 +1,20 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, Text } from 'react-native';
-import { AppProvider } from './contexts/AppContext';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import 'expo-router/entry';
+import { LogBox } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
-import { useCallback, useEffect, useState } from 'react';
 
-// Keep the splash screen visible while we fetch resources
-SplashScreen.preventAutoHideAsync();
-
-export default function App() {
-  const [appIsReady, setAppIsReady] = useState(false);
-
-  useEffect(() => {
-    async function prepare() {
-      try {
-        // Pre-load any assets or data here
-        // For example, you might want to pre-load images or fetch initial data
-
-        // Artificially delay for two seconds to simulate a loading screen
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      } catch (e) {
-        console.warn('Error loading app resources:', e);
-      } finally {
-        // Tell the application to render
-        setAppIsReady(true);
-      }
-    }
-
-    prepare();
-  }, []);
-
-  const onLayoutRootView = useCallback(async () => {
-    if (appIsReady) {
-      // This tells the splash screen to hide immediately
-      await SplashScreen.hideAsync();
-    }
-  }, [appIsReady]);
-
-  if (!appIsReady) {
-    return null;
+// Prevent the splash screen from auto-hiding
+SplashScreen.preventAutoHideAsync().catch(error => {
+  if (error.message && error.message.includes('keep awake')) {
+    console.log('Ignoring keep-awake activation warning - this is expected behavior');
+  } else {
+    console.warn('Error preventing splash screen auto hide:', error);
   }
-
-  return (
-    <GestureHandlerRootView style={styles.container} onLayout={onLayoutRootView}>
-      <SafeAreaProvider>
-        <AppProvider>
-          <StatusBar style="light" />
-          <View style={styles.container}>
-            {/* The app will be rendered here by Expo Router */}
-          </View>
-        </AppProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
 });
+
+// Ignore specific warnings
+LogBox.ignoreLogs([
+  'Non-serializable values were found in the navigation state',
+  'ViewPropTypes will be removed from React Native',
+  'AsyncStorage has been extracted from react-native',
+  'Unable to deactivate keep awake',
+]);

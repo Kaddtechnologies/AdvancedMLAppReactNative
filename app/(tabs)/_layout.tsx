@@ -5,7 +5,6 @@ import { Colors } from '../../constants/Colors';
 import { BlurView } from 'expo-blur';
 import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-
 /**
  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
  */
@@ -30,7 +29,7 @@ export default function TabLayout() {
           <View style={styles.tabBarBackground}>
             <BlurView intensity={20} tint="dark" style={styles.blurView}>
               <LinearGradient
-                colors={colors.navBarGradient.colors}
+                colors={colors.navBarGradient.colors as [string, string]}
                 start={colors.navBarGradient.start}
                 end={colors.navBarGradient.end}
                 style={styles.gradient}
@@ -55,14 +54,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="test-sessions"
-        options={{
-          title: 'Test Sessions',
-          tabBarIcon: ({ color }) => <TabBarIcon name="list" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="chat"
+        name="conversations"
         options={{
           title: 'Chat',
           tabBarIcon: ({ color }) => <TabBarIcon name="comments" color={color} />,
@@ -73,13 +65,6 @@ export default function TabLayout() {
         options={{
           title: 'Metrics',
           tabBarIcon: ({ color }) => <TabBarIcon name="bar-chart" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }) => <TabBarIcon name="cog" color={color} />,
         }}
       />
     </Tabs>

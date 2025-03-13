@@ -1,159 +1,172 @@
 import React from 'react';
-import { StyleSheet, View, Dimensions, ViewStyle } from 'react-native';
-import { LineChart as VictoryLineChart } from 'victory-native';
-import { VictoryTheme, VictoryAxis, VictoryLabel } from 'victory-native';
+import { View, StyleSheet, Dimensions, TextStyle, ViewStyle } from 'react-native';
+import { LineChart as RNLineChart } from 'react-native-chart-kit';
 import { Colors } from '../../constants/Colors';
 import { useColorScheme } from 'react-native';
-import { BorderRadius, Spacing } from '../../constants/Theme';
-import GradientCard from './GradientCard';
+import { Spacing } from '../../constants/Theme';
 import StyledText from './StyledText';
 
-interface DataPoint {
-  x: number | Date;
-  y: number;
-}
-
 interface LineChartProps {
-  data: DataPoint[];
+  data: { x: number; y: number }[];
   title?: string;
   description?: string;
-  style?: ViewStyle;
-  height?: number;
-  width?: number;
   xAxisLabel?: string;
   yAxisLabel?: string;
-  color?: string;
-  showCard?: boolean;
+  height?: number;
+  width?: number;
+}
+
+interface Styles {
+  container: ViewStyle;
+  title: TextStyle;
+  description: TextStyle;
+  chartContainer: ViewStyle;
+  chartWrapper: ViewStyle;
+  xAxisLabel: TextStyle;
+  yAxisLabel: TextStyle;
 }
 
 const screenWidth = Dimensions.get('window').width;
 
-export const LineChart: React.FC<LineChartProps> = ({
+const LineChart: React.FC<LineChartProps> = ({
   data,
   title,
   description,
-  style,
-  height = 200,
-  width = screenWidth - 40,
-  xAxisLabel,
-  yAxisLabel,
-  color,
-  showCard = true,
+  xAxisLabel = '',
+  yAxisLabel = '',
+  height = 220,
+  width = screenWidth - 48,
 }) => {
-  const colorScheme = useColorScheme() ?? 'light';
+  const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
-  const chartColor = color || colors.accent;
+  const chartData = {
+    labels: data.map(point => point.x.toString()),
+    datasets: [
+      {
+        data: data.map(point => point.y),
+        color: () => colors.accent,
+        strokeWidth: 2,
+      },
+    ],
+  };
 
-  const chartComponent = (
-    <View style={styles.chartContainer}>
+  const chartConfig = {
+    backgroundColor: 'transparent',
+    backgroundGradientFrom: 'transparent',
+    backgroundGradientTo: 'transparent',
+    decimalPlaces: 1,
+    color: () => colors.accent,
+    labelColor: () => colors.textSecondary,
+    style: {
+      borderRadius: 16,
+    },
+    propsForDots: {
+      r: '6',
+      strokeWidth: '2',
+      stroke: colors.accent,
+    },
+  };
+
+  const titleStyle: TextStyle = {
+    ...styles.title,
+    fontSize: 18,
+    fontWeight: '600',
+  };
+
+  const descriptionStyle: TextStyle = {
+    ...styles.description,
+    fontSize: 14,
+  };
+
+  const yAxisStyle: TextStyle = {
+    ...styles.yAxisLabel,
+    fontSize: 12,
+  };
+
+  const xAxisStyle: TextStyle = {
+    ...styles.xAxisLabel,
+    fontSize: 12,
+  };
+
+  return (
+    <View style={styles.container}>
       {title && (
-        <StyledText variant="cardTitle" weight="medium" style={styles.title}>
+        <StyledText style={titleStyle}>
           {title}
         </StyledText>
       )}
-
-      <View style={styles.chart}>
-        <VictoryLineChart
-          height={height}
-          width={width}
-          data={data}
-          theme={VictoryTheme.material}
-          style={{
-            data: {
-              stroke: chartColor,
-              strokeWidth: 3,
-            },
-            parent: {
-              backgroundColor: 'transparent',
-            },
-          }}
-          padding={{ top: 20, bottom: 40, left: 50, right: 20 }}
-        >
-          <VictoryAxis
-            style={{
-              axis: { stroke: colors.accentSecondary, opacity: 0.5 },
-              tickLabels: {
-                fill: colors.text,
-                opacity: 0.7,
-                fontSize: 10,
-              },
-              grid: {
-                stroke: colors.accentSecondary,
-                opacity: 0.1,
-              },
-            }}
-            label={xAxisLabel}
-            axisLabelComponent={
-              <VictoryLabel
-                style={{ fill: colors.text, opacity: 0.7 }}
-                dy={20}
-              />
-            }
-          />
-
-          <VictoryAxis
-            dependentAxis
-            style={{
-              axis: { stroke: colors.accentSecondary, opacity: 0.5 },
-              tickLabels: {
-                fill: colors.text,
-                opacity: 0.7,
-                fontSize: 10,
-              },
-              grid: {
-                stroke: colors.accentSecondary,
-                opacity: 0.1,
-              },
-            }}
-            label={yAxisLabel}
-            axisLabelComponent={
-              <VictoryLabel
-                style={{ fill: colors.text, opacity: 0.7 }}
-                dx={-30}
-              />
-            }
-          />
-        </VictoryLineChart>
-      </View>
-
       {description && (
-        <StyledText variant="bodySmall" style={styles.description}>
+        <StyledText style={descriptionStyle}>
           {description}
         </StyledText>
       )}
+
+      <View style={styles.chartContainer}>
+        {yAxisLabel && (
+          <StyledText style={yAxisStyle}>
+            {yAxisLabel}
+          </StyledText>
+        )}
+
+        <View style={styles.chartWrapper}>
+          <RNLineChart
+            data={chartData}
+            width={width}
+            height={height}
+            chartConfig={chartConfig}
+            bezier
+            withInnerLines={false}
+            withOuterLines={true}
+            withVerticalLines={false}
+            withHorizontalLines={true}
+            withVerticalLabels={true}
+            withHorizontalLabels={true}
+            fromZero
+          />
+        </View>
+
+        {xAxisLabel && (
+          <StyledText style={xAxisStyle}>
+            {xAxisLabel}
+          </StyledText>
+        )}
+      </View>
     </View>
   );
-
-  if (showCard) {
-    return (
-      <GradientCard style={[styles.container, style]}>
-        {chartComponent}
-      </GradientCard>
-    );
-  }
-
-  return chartComponent;
 };
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<Styles>({
   container: {
-    borderRadius: BorderRadius.large,
-    overflow: 'hidden',
-    padding: 0,
-  },
-  chartContainer: {
     padding: Spacing.m,
   },
   title: {
-    marginBottom: Spacing.s,
-  },
-  chart: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: Spacing.xs,
   },
   description: {
+    marginBottom: Spacing.m,
+    opacity: 0.7,
+  },
+  chartContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  chartWrapper: {
+    marginVertical: Spacing.m,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  xAxisLabel: {
+    textAlign: 'center',
     marginTop: Spacing.s,
+    opacity: 0.7,
+  },
+  yAxisLabel: {
+    transform: [{ rotate: '-90deg' }] as unknown as TextStyle['transform'],
+    position: 'absolute',
+    left: -30,
+    width: 100,
+    textAlign: 'center',
     opacity: 0.7,
   },
 });
