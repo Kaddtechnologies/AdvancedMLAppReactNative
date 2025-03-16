@@ -13,9 +13,17 @@ const GradientBackground: React.FC<GradientBackgroundProps> = ({
   children,
   style,
 }) => {
+  console.log('GradientBackground rendering');
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
   const gradientColors = colors.backgroundGradient.colors as [string, string];
+
+  console.log('GradientBackground props:', {
+    hasChildren: !!children,
+    colorScheme,
+    gradientColors,
+    style: style ? Object.keys(style) : 'none'
+  });
 
   return (
     <View style={[{ flex: 1 }, style]}>
@@ -24,6 +32,9 @@ const GradientBackground: React.FC<GradientBackgroundProps> = ({
         start={colors.backgroundGradient.start}
         end={colors.backgroundGradient.end}
         style={{ flex: 1 }}
+        onLayout={() => {
+          console.log('GradientBackground LinearGradient onLayout');
+        }}
       >
         {children}
       </LinearGradient>

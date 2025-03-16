@@ -26,6 +26,12 @@ const StyledText: React.FC<StyledTextProps> = ({
   children,
   ...props
 }) => {
+  console.log('StyledText rendering:', {
+    variant,
+    weight,
+    hasStyle: !!style,
+    text: typeof children === 'string' ? children.substring(0, 20) : 'non-string content'
+  });
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
@@ -36,7 +42,16 @@ const StyledText: React.FC<StyledTextProps> = ({
   };
 
   return (
-    <Text style={[baseStyle, style]} {...props}>
+    <Text
+      style={[baseStyle, style]}
+      {...props}
+      onLayout={() => {
+        console.log('StyledText layout complete:', {
+          variant,
+          text: typeof children === 'string' ? children.substring(0, 20) : 'non-string content'
+        });
+      }}
+    >
       {children}
     </Text>
   );

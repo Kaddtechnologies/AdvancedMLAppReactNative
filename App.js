@@ -2,13 +2,26 @@ import 'expo-router/entry';
 import { LogBox } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 
-// Prevent the splash screen from auto-hiding
-SplashScreen.preventAutoHideAsync().catch(error => {
-  if (error.message && error.message.includes('keep awake')) {
-    console.log('Ignoring keep-awake activation warning - this is expected behavior');
-  } else {
-    console.warn('Error preventing splash screen auto hide:', error);
+console.log('App.js initializing...');
+
+// Initialize splash screen
+const initSplashScreen = async () => {
+  try {
+    console.log('Preventing splash screen auto-hide...');
+    await SplashScreen.preventAutoHideAsync();
+    console.log('Splash screen auto-hide prevented successfully');
+  } catch (error) {
+    if (error.message && error.message.includes('keep awake')) {
+      console.log('Ignoring keep-awake activation warning - this is expected behavior');
+    } else {
+      console.warn('Error preventing splash screen auto hide:', error);
+    }
   }
+};
+
+// Initialize app
+initSplashScreen().catch(error => {
+  console.error('Error during app initialization:', error);
 });
 
 // Ignore specific warnings
@@ -18,3 +31,5 @@ LogBox.ignoreLogs([
   'AsyncStorage has been extracted from react-native',
   'Unable to deactivate keep awake',
 ]);
+
+console.log('App.js initialization complete');

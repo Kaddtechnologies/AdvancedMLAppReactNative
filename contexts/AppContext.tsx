@@ -119,8 +119,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const initializeApp = async () => {
+      console.log('Starting app initialization...');
+      setIsLoading(true);
+      setError(null);
+
       try {
-        // Add initial breadcrumb
         Sentry.addBreadcrumb({
           category: 'app',
           message: 'Starting app initialization',
@@ -128,8 +131,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         });
 
         // Initialize Firebase with error handling
+        console.log('Initializing Firebase...');
         try {
           await FirebaseService.initialize();
+          console.log('Firebase initialized successfully');
           Sentry.addBreadcrumb({
             category: 'firebase',
             message: 'Firebase initialized successfully',
@@ -137,6 +142,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           });
         } catch (firebaseError) {
           console.error('Error initializing Firebase:', firebaseError);
+          // Log error but continue - Firebase is not critical for app function
           Sentry.captureException(firebaseError, {
             tags: {
               component: 'AppContext',
@@ -144,12 +150,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               step: 'firebase_init'
             }
           });
-          // Continue initialization despite Firebase error
         }
 
         // Load test sessions with error handling
+        console.log('Loading test sessions...');
         try {
           await refreshTestSessions();
+          console.log('Test sessions loaded successfully');
           Sentry.addBreadcrumb({
             category: 'data',
             message: 'Test sessions loaded',
@@ -157,6 +164,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           });
         } catch (sessionsError) {
           console.error('Error loading test sessions:', sessionsError);
+          // Non-critical error, continue with empty sessions
+          setTestSessions([]);
           Sentry.captureException(sessionsError, {
             tags: {
               component: 'AppContext',
@@ -164,12 +173,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               step: 'load_sessions'
             }
           });
-          // Continue initialization despite error
         }
 
         // Load metrics history with error handling
+        console.log('Loading metrics history...');
         try {
           await refreshMetricsHistory();
+          console.log('Metrics history loaded successfully');
           Sentry.addBreadcrumb({
             category: 'data',
             message: 'Metrics history loaded',
@@ -177,6 +187,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           });
         } catch (metricsError) {
           console.error('Error loading metrics history:', metricsError);
+          // Non-critical error, continue with empty metrics
+          setMetricsHistory({});
           Sentry.captureException(metricsError, {
             tags: {
               component: 'AppContext',
@@ -184,12 +196,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               step: 'load_metrics'
             }
           });
-          // Continue initialization despite error
         }
 
         // Load shared info with error handling
+        console.log('Loading shared info...');
         try {
           await refreshSharedInfo();
+          console.log('Shared info loaded successfully');
           Sentry.addBreadcrumb({
             category: 'data',
             message: 'Shared info loaded',
@@ -197,6 +210,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           });
         } catch (infoError) {
           console.error('Error loading shared info:', infoError);
+          // Non-critical error, continue with empty shared info
+          setSharedInfo({});
           Sentry.captureException(infoError, {
             tags: {
               component: 'AppContext',
@@ -204,37 +219,45 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               step: 'load_shared_info'
             }
           });
-          // Continue initialization despite error
         }
 
-        setIsAuthenticated(true);
-
-        // Set user context in Sentry if authenticated
+        // Check authentication status
         try {
-          // Get user ID from SecureStore instead of using getCurrentUser
           const userId = await FirebaseService.getUid();
-          if (userId) {
-            Sentry.setUser({
-              id: userId,
-            });
+          const isAuth = !!userId;
+          setIsAuthenticated(isAuth);
+
+          if (isAuth) {
+            Sentry.setUser({ id: userId });
             Sentry.addBreadcrumb({
               category: 'auth',
               message: 'User context set in Sentry',
               level: 'info',
             });
+          } else {
+            // Proceed as unauthenticated user
+            console.log('No authenticated user, proceeding in unauthenticated state');
+            Sentry.addBreadcrumb({
+              category: 'auth',
+              message: 'Proceeding without authentication',
+              level: 'info',
+            });
           }
         } catch (userError) {
-          console.error('Error setting user context in Sentry:', userError);
-          // Continue initialization despite error
+          console.error('Error checking authentication:', userError);
+          // Proceed as unauthenticated user
+          setIsAuthenticated(false);
+          Sentry.captureException(userError);
         }
 
         Sentry.addBreadcrumb({
           category: 'app',
-          message: 'App initialization completed successfully',
+          message: 'App initialization completed',
           level: 'info',
         });
       } catch (error) {
         console.error('Error initializing app:', error);
+        setError('Failed to initialize app');
         Sentry.captureException(error, {
           tags: {
             component: 'AppContext',
@@ -243,7 +266,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
         });
       } finally {
-        // Ensure loading state is set to false even if there are errors
+        // Always proceed by setting loading to false
         console.log('Setting isLoading to false');
         setIsLoading(false);
       }

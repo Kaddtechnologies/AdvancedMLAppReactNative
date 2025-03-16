@@ -260,7 +260,7 @@ platform :android do
         UI.important("This is non-fatal as the upload was successful")
       end
 
-      UI.success("Successfully deployed version #{new_version} to Firebase App Distribution")
+      UI.success("Successfully deployed version #{new_version} (build #{new_build_number})  to Firebase App Distribution")
     rescue => e
       UI.error("Error during deployment: #{e.message}")
       raise e

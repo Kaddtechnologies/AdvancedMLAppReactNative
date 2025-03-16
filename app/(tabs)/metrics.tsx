@@ -33,7 +33,7 @@ type MetricType =
 const metricInfo: Record<MetricType, {
   title: string;
   description: string;
-  icon: string;
+  icon: "user" | "refresh" | "sitemap" | "comments";
   max: number;
   unit: string;
 }> = {

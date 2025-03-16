@@ -7,21 +7,27 @@ import { BorderRadius, Shadows } from '../../constants/Theme';
 
 interface GradientCardProps {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: ViewStyle | ViewStyle[];
   withShadow?: boolean;
+  onLayout?: () => void;
 }
 
 const GradientCard: React.FC<GradientCardProps> = ({
   children,
   style,
   withShadow = false,
+  onLayout,
 }) => {
+  console.log('GradientCard rendering');
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
   const gradientColors = colors.cardBackgroundGradient.colors as [string, string];
 
   return (
-    <View style={[styles.container, withShadow && Shadows.small, style]}>
+    <View
+      style={[styles.container, withShadow && Shadows.small, style]}
+      onLayout={onLayout}
+    >
       <LinearGradient
         colors={gradientColors}
         start={colors.cardBackgroundGradient.start}

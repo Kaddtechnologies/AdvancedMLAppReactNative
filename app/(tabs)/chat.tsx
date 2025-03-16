@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import GradientBackground from '../../components/ui/GradientBackground';
 import StyledText from '../../components/ui/StyledText';
-import ChatBubble from '../../components/ui/ChatBubble';
+import ChatBubble from '../../components/chat/ChatBubble';
 import GradientButton from '../../components/ui/GradientButton';
 import { Spacing } from '../../constants/Theme';
 import { useColorScheme } from 'react-native';
@@ -21,6 +21,7 @@ import { Colors } from '../../constants/Colors';
 import { useAppContext } from '../../contexts/AppContext';
 import ChatService, { Message, Conversation } from '../../services/ChatService';
 import { format } from 'date-fns';
+import VoiceInput from '../../components/ui/VoiceInput';
 
 export default function ChatScreen() {
   const router = useRouter();
@@ -103,15 +104,17 @@ export default function ChatScreen() {
 
       // Add the new conversation to the list
       const newConversation: Conversation = {
-        id: response.conversationId,
+        id: response['conversationId'],
         title,
         lastMessage: '',
         lastMessageTimestamp: new Date().toISOString(),
+        unreadCount: 0,
         messageCount: 0
       };
 
       setConversations([newConversation, ...conversations]);
-      setActiveConversation(response.conversationId);
+      setActiveConversation(response['conversationId']);
+      router.push(`/chat/${response['conversationId']}`);
     } catch (error) {
       console.error('Error creating conversation:', error);
     } finally {
@@ -133,6 +136,8 @@ export default function ChatScreen() {
         id: Date.now().toString(),
         text: message,
         isUser: true,
+        status: 'sent',
+        conversationId: activeConversationId,
         timestamp: new Date().toISOString()
       };
 
@@ -141,7 +146,7 @@ export default function ChatScreen() {
 
       // Send the message to the API
       const metadata = activeSessionId ? { testSessionId: activeSessionId } : undefined;
-      const response = await ChatService.sendMessage(message, activeConversationId, metadata);
+      const response = await ChatService.sendMessage(message, activeConversationId);
 
       // Add the AI response to the UI
       addMessage(response);
@@ -227,11 +232,9 @@ export default function ChatScreen() {
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => (
                   <ChatBubble
-                    message={item.text}
-                    isUser={item.isUser}
-                    timestamp={formatTimestamp(item.timestamp)}
-                    metadata={item.metadata}
+                    message={item}
                     showMetadata={!!activeSessionId}
+                    metadata={item.metadata}
                   />
                 )}
                 contentContainerStyle={styles.messagesList}
@@ -255,16 +258,22 @@ export default function ChatScreen() {
                 keyboardVerticalOffset={100}
                 style={styles.inputContainer}
               >
-                <TextInput
-                  style={styles.input}
-                  placeholder="Type a message..."
-                  placeholderTextColor={colors.accentSecondary}
-                  value={message}
-                  onChangeText={setMessage}
-                  multiline
-                  maxLength={500}
-                  editable={!isSending}
-                />
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Type a message..."
+                    placeholderTextColor={colors.accentSecondary}
+                    value={message}
+                    onChangeText={setMessage}
+                    multiline
+                    maxLength={500}
+                    editable={!isSending}
+                  />
+                  <VoiceInput
+                    onTextChange={(text) => setMessage(text)}
+                    disabled={isSending}
+                  />
+                </View>
                 <TouchableOpacity
                   style={[
                     styles.sendButton,
@@ -407,5 +416,13 @@ const styles = StyleSheet.create({
   },
   loader: {
     marginTop: Spacing.xl,
+  },
+  inputWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 20,
+    marginRight: Spacing.s,
   },
 });

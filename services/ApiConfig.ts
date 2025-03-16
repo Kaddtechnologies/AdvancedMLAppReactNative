@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/react-native';
 import { checkOnlineStatus } from '../utils/networkMonitor';
 
 // Base URL from the project specifications
-const API_BASE_URL = 'https://deaconapi.myworkatcornerstone.com';
+const API_BASE_URL = 'https://deaconapidev.myworkatcornerstone.com';
 
 // Create axios instance with default config
 const apiClient = axios.create({

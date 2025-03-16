@@ -80,23 +80,19 @@ def enableProguardInReleaseBuilds = (findProperty('android.enableProguardInRelea
  */
 def jscFlavor = 'org.webkit:android-jsc:+'
 
-project.ext.sentryCli=[collectModulesScript: new File(["node", "--print", "require.resolve('@sentry/react-native/package.json')"].execute().text.trim(), "../dist/js/tools/collectModules.js")]
-
-apply from: new File(["node", "--print", "require.resolve('@sentry/react-native/package.json')"].execute().text.trim(), "../sentry.gradle")
-
 android {
     ndkVersion rootProject.ext.ndkVersion
 
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.deacon.admin.maui.app"
+    namespace 'com.deacon.admin.maui.app'
     defaultConfig {
         applicationId 'com.deacon.admin.maui.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 27
-        versionName "2.0.23"
+        versionCode 38
+        versionName "2.0.34"
     }
     signingConfigs {
         debug {
@@ -154,6 +150,10 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
+    // Add explicit AndroidX vector drawable dependencies
+    implementation "androidx.vectordrawable:vectordrawable:1.1.0"
+    implementation "androidx.vectordrawable:vectordrawable-animated:1.1.0"
+
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";
     def isWebpAnimatedEnabled = (findProperty('expo.webp.animated') ?: "") == "true";
@@ -178,3 +178,5 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+apply plugin: 'com.google.gms.google-services'

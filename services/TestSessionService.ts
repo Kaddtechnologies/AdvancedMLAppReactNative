@@ -155,13 +155,13 @@ class TestSessionService {
     }
 
     // Create a conversation for this test session
-    const response = await ChatService.createConversation(session.title);
+    const conversationId = await ChatService.createConversation(session.title);
 
     // Update the session
     const updatedSession: TestSession = {
       ...session,
       status: 'in-progress',
-      conversationId: response.conversationId
+      conversationId
     };
 
     await this.saveTestSession(updatedSession);

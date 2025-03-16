@@ -13,13 +13,19 @@ export const setupGlobalErrorHandlers = () => {
     // Log the error to console
     console.error('Unhandled error:', error, 'Fatal:', isFatal);
 
-    // Capture the error in Sentry
-    Sentry.captureException(error, {
-      tags: {
-        fatal: isFatal ? 'yes' : 'no',
-        handler: 'global',
-      },
-    });
+    // Try to capture the error in Sentry, but don't block if it fails
+    try {
+      if (Sentry && typeof Sentry.captureException === 'function') {
+        Sentry.captureException(error, {
+          tags: {
+            fatal: isFatal ? 'yes' : 'no',
+            handler: 'global',
+          },
+        });
+      }
+    } catch (sentryError) {
+      console.log('Failed to report error to Sentry:', sentryError);
+    }
 
     // Show an alert for fatal errors, but only once
     if (isFatal && !errorAlertShown) {
@@ -39,14 +45,20 @@ export const setupGlobalErrorHandlers = () => {
   const promiseRejectionHandler = (id, rejection) => {
     console.error('Unhandled promise rejection:', rejection);
 
-    Sentry.captureException(rejection, {
-      tags: {
-        handler: 'promise_rejection',
-      },
-      extra: {
-        promise_id: id,
-      },
-    });
+    try {
+      if (Sentry && typeof Sentry.captureException === 'function') {
+        Sentry.captureException(rejection, {
+          tags: {
+            handler: 'promise_rejection',
+          },
+          extra: {
+            promise_id: id,
+          },
+        });
+      }
+    } catch (sentryError) {
+      console.log('Failed to report promise rejection to Sentry:', sentryError);
+    }
   };
 
   // Set up the global error handler

@@ -55,7 +55,7 @@ export default function ChatScreen() {
       const userMessage: Message = {
         id: Date.now().toString(),
         text,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
         isUser: true,
         status: 'sending',
         conversationId: id as string,
@@ -97,9 +97,9 @@ export default function ChatScreen() {
       const errorMessage = {
         id: Date.now().toString(),
         text,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
         isUser: true,
-        status: 'error',
+        status: 'error' as const,
         conversationId: id as string,
       };
       addMessage(errorMessage);

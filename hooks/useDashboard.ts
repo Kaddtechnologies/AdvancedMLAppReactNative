@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useAppContext } from '../contexts/AppContext';
-import * as SecureStore from 'expo-secure-store';
 
 export interface DashboardMetric {
   id: string;
@@ -33,53 +31,17 @@ export function useDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<DashboardData | null>(null);
-  const { apiClient } = useAppContext();
 
   const fetchDashboardData = async () => {
+    console.log('Fetching dashboard data...');
     try {
       setLoading(true);
       setError(null);
 
-      // Get the Firebase UID from secure storage
-      const firebaseUid = await SecureStore.getItemAsync('firebase_uid');
-      if (!firebaseUid) {
-        throw new Error('User not authenticated');
-      }
+      // Add delay to ensure state updates are processed
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-      // Fetch data from your API
-      const response = await apiClient.get(`/api/dashboard/${firebaseUid}`);
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch dashboard data');
-      }
-
-      const dashboardData = await response.json();
-
-      // Transform the data into the format we need
-      const transformedData: DashboardData = {
-        metrics: dashboardData.metrics.map((metric: any) => ({
-          id: metric.id,
-          title: metric.name,
-          value: metric.value.toString(),
-          description: metric.description,
-          trend: metric.trend,
-          trendValue: metric.trendValue.toString(),
-          icon: getMetricIcon(metric.name),
-        })),
-        chartData: dashboardData.progressData.map((point: any, index: number) => ({
-          x: index + 1,
-          y: point.value,
-        })),
-        lastUpdated: new Date().toISOString(),
-        insights: dashboardData.insights || [],
-      };
-
-      setData(transformedData);
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
-
-      // Enhanced mock data for MVP demo
+      console.log('Preparing mock data...');
       const mockData: DashboardData = {
         metrics: [
           {
@@ -108,7 +70,7 @@ export function useDashboard() {
             description: 'Memory & Context',
             trend: 'up',
             trendValue: '7%',
-            icon: 'brain',
+            icon: 'lightbulb-o',
             details: {
               previousValue: '87%',
               changePercentage: 8.05,
@@ -146,7 +108,7 @@ export function useDashboard() {
             description: 'Human-like Interaction',
             trend: 'up',
             trendValue: '1.1',
-            icon: 'comments',
+            icon: 'comments-o',
             details: {
               previousValue: '8.3',
               changePercentage: 13.25,
@@ -190,15 +152,46 @@ export function useDashboard() {
           }
         ]
       };
+
+      console.log('Setting dashboard data...');
       setData(mockData);
+      console.log('Dashboard data set successfully:', mockData);
+    } catch (error) {
+      console.error('Error setting mock dashboard data:', error);
+      setError('Failed to load dashboard data');
     } finally {
+      console.log('Finishing dashboard data fetch, setting loading to false');
       setLoading(false);
+
+      // Add post-loading state change logging
+      setTimeout(() => {
+        console.log('Post loading state check:', {
+          loading: false,
+          hasData: !!data,
+          dataKeys: data ? Object.keys(data) : [],
+          metricsCount: data?.metrics?.length ?? 0,
+          error: error
+        });
+      }, 0);
     }
   };
 
   useEffect(() => {
+    console.log('useDashboard hook mounted');
     fetchDashboardData();
+    return () => {
+      console.log('useDashboard hook cleanup');
+    };
   }, []);
+
+  // Add effect to monitor state changes
+  useEffect(() => {
+    console.log('Dashboard state updated:', {
+      loading,
+      hasData: !!data,
+      hasError: !!error
+    });
+  }, [loading, data, error]);
 
   return {
     loading,
@@ -206,20 +199,4 @@ export function useDashboard() {
     data,
     refresh: fetchDashboardData,
   };
-}
-
-// Helper function to get appropriate icon for each metric
-function getMetricIcon(metricName: string): string {
-  switch (metricName) {
-    case 'Personalization Score':
-      return 'user';
-    case 'Information Recall':
-      return 'brain';
-    case 'Contextual Relevance':
-      return 'bullseye';
-    case 'Conversation Naturalness':
-      return 'comments';
-    default:
-      return 'chart-line';
-  }
 }

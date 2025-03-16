@@ -5,6 +5,8 @@ import Animated, {
   useAnimatedRef,
   useAnimatedStyle,
   useScrollViewOffset,
+  type AnimatedStyle,
+  type StyleProps,
 } from 'react-native-reanimated';
 
 import { ThemedView } from '@/components/ThemedView';
@@ -27,20 +29,19 @@ export default function ParallaxScrollView({
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
   const bottom = useBottomTabOverflow();
-  const headerAnimatedStyle = useAnimatedStyle(() => {
+  const headerAnimatedStyle = useAnimatedStyle<StyleProps>(() => {
+    const translateY = interpolate(
+      scrollOffset.value,
+      [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
+      [-HEADER_HEIGHT / 2, 0, HEADER_HEIGHT * 0.75]
+    );
+    const scale = interpolate(
+      scrollOffset.value,
+      [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
+      [2, 1, 1]
+    );
     return {
-      transform: [
-        {
-          translateY: interpolate(
-            scrollOffset.value,
-            [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
-            [-HEADER_HEIGHT / 2, 0, HEADER_HEIGHT * 0.75]
-          ),
-        },
-        {
-          scale: interpolate(scrollOffset.value, [-HEADER_HEIGHT, 0, HEADER_HEIGHT], [2, 1, 1]),
-        },
-      ],
+      transform: [{ translateY }, { scale }] as any,
     };
   });
 

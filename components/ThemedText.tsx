@@ -15,7 +15,9 @@ export function ThemedText({
   type = 'default',
   ...rest
 }: ThemedTextProps) {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const colorValue = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  // Ensure we only use string colors, not gradient objects
+  const color = typeof colorValue === 'string' ? colorValue : '#000';
 
   return (
     <Text

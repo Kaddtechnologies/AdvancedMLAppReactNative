@@ -7,45 +7,72 @@ import MetricCard from '../../components/ui/MetricCard';
 import GradientCard from '../../components/ui/GradientCard';
 import LineChart from '../../components/ui/LineChart';
 import { Spacing } from '../../constants/Theme';
-import { FontAwesome } from '@expo/vector-icons';
+import * as Icons from 'lucide-react-native';
 import { useColorScheme } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { useDashboard } from '../../hooks/useDashboard';
 
 export default function DashboardScreen() {
+  console.log('DashboardScreen rendering');
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
   const { loading, error, data, refresh } = useDashboard();
+
+  console.log('DashboardScreen state:', {
+    loading,
+    hasError: !!error,
+    hasData: !!data,
+    dataMetrics: data?.metrics?.length ?? 0
+  });
 
   const navigateToMetricDetail = (metricId: string) => {
     router.push(`/metric-detail/${metricId}`);
   };
 
   if (loading) {
+    console.log('DashboardScreen rendering loading state');
     return (
       <GradientBackground>
         <View style={styles.loadingContainer}>
           <StyledText style={{ fontSize: 16 }}>Loading dashboard data...</StyledText>
+          <View style={styles.debugInfo}>
+            <StyledText style={{ fontSize: 12, opacity: 0.7 }}>Debug Info:</StyledText>
+            <StyledText style={{ fontSize: 12, opacity: 0.7 }}>
+              Loading: {loading.toString()}{'\n'}
+              Has Data: {(!!data).toString()}{'\n'}
+              Data Keys: {data ? Object.keys(data).join(', ') : 'none'}{'\n'}
+              Metrics Count: {data?.metrics?.length ?? 0}
+            </StyledText>
+          </View>
         </View>
       </GradientBackground>
     );
   }
 
   if (error) {
+    console.log('DashboardScreen rendering error state:', error);
     return (
       <GradientBackground>
         <View style={styles.errorContainer}>
           <StyledText style={{ ...styles.errorText, fontSize: 16 }}>
             {error}
           </StyledText>
-          <TouchableOpacity onPress={refresh} style={styles.retryButton}>
+          <TouchableOpacity
+            onPress={() => {
+              console.log('Retry button pressed');
+              refresh();
+            }}
+            style={styles.retryButton}
+          >
             <StyledText style={{ fontSize: 16 }}>Retry</StyledText>
           </TouchableOpacity>
         </View>
       </GradientBackground>
     );
   }
+
+  console.log('DashboardScreen rendering main content');
 
   return (
     <GradientBackground>
@@ -90,13 +117,7 @@ export default function DashboardScreen() {
                   description={metric.description}
                   trend={metric.trend}
                   trendValue={metric.trendValue}
-                  icon={
-                    <FontAwesome
-                      name={metric.icon as any}
-                      size={20}
-                      color={colors.accent}
-                    />
-                  }
+                  icon={getMetricIcon(metric.title, colors.accent)}
                   instructions={getMetricInstructions(metric.title)}
                 />
               </TouchableOpacity>
@@ -137,6 +158,23 @@ export default function DashboardScreen() {
   );
 }
 
+// Helper function to get the appropriate icon for each metric
+function getMetricIcon(metricTitle: string, color: string) {
+  const iconProps = { size: 20, color };
+  switch (metricTitle) {
+    case 'Personalization Score':
+      return <Icons.Brain {...iconProps} />;
+    case 'Information Recall':
+      return <Icons.MessageSquare {...iconProps} />;
+    case 'Contextual Relevance':
+      return <Icons.Activity {...iconProps} />;
+    case 'Conversation Naturalness':
+      return <Icons.Zap {...iconProps} />;
+    default:
+      return <Icons.Activity {...iconProps} />;
+  }
+}
+
 // Helper function to get instructions for each metric
 function getMetricInstructions(metricTitle: string): string {
   switch (metricTitle) {
@@ -154,6 +192,12 @@ function getMetricInstructions(metricTitle: string): string {
 }
 
 const styles = StyleSheet.create({
+  debugInfo: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    borderRadius: 8,
+  },
   container: {
     flex: 1,
   },

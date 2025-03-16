@@ -1,73 +1,103 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
+import React, { useState } from 'react';
 import { Tabs } from 'expo-router';
 import { useColorScheme } from 'react-native';
+import { EventArg } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { BlurView } from 'expo-blur';
 import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-/**
- * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
- */
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={24} style={{ marginBottom: -3 }} {...props} />;
-}
+import { TabIcon } from '../../components/ui/TabIcon';
+import SideNav from '../../components/ui/SideNav';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
+  const [isSideNavVisible, setIsSideNavVisible] = useState(false);
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.accentSecondary,
-        tabBarStyle: styles.tabBar,
-        tabBarBackground: () => (
-          <View style={styles.tabBarBackground}>
-            <BlurView intensity={20} tint="dark" style={styles.blurView}>
-              <LinearGradient
-                colors={colors.navBarGradient.colors as [string, string]}
-                start={colors.navBarGradient.start}
-                end={colors.navBarGradient.end}
-                style={styles.gradient}
-              />
-            </BlurView>
-          </View>
-        ),
-        headerStyle: {
-          backgroundColor: colors.background,
-        },
-        headerTintColor: colors.text,
-        headerTitleStyle: {
-          fontWeight: '600',
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color }) => <TabBarIcon name="dashboard" color={color} />,
+    <>
+      <SideNav isVisible={isSideNavVisible} onClose={() => setIsSideNavVisible(false)} />
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: colors.accent,
+          tabBarInactiveTintColor: colors.accentSecondary,
+          tabBarStyle: styles.tabBar,
+          tabBarBackground: () => (
+            <View style={styles.tabBarBackground}>
+              <BlurView intensity={40} tint="dark" style={styles.blurView}>
+                <LinearGradient
+                  colors={colors.navBarGradient.colors as [string, string]}
+                  start={colors.navBarGradient.start}
+                  end={colors.navBarGradient.end}
+                  style={styles.gradient}
+                />
+              </BlurView>
+            </View>
+          ),
+          headerStyle: {
+            backgroundColor: colors.background,
+          },
+          headerTintColor: colors.text,
+          headerTitleStyle: {
+            fontWeight: '600',
+          },
+          tabBarLabelStyle: {
+            textTransform: 'capitalize',
+            fontSize: 12,
+          },
         }}
-      />
-      <Tabs.Screen
-        name="conversations"
-        options={{
-          title: 'Chat',
-          tabBarIcon: ({ color }) => <TabBarIcon name="comments" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="metrics"
-        options={{
-          title: 'Metrics',
-          tabBarIcon: ({ color }) => <TabBarIcon name="bar-chart" color={color} />,
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Dashboard',
+            headerTitle: 'Dashboard',
+            tabBarLabel: 'Dashboard',
+            tabBarIcon: ({ color }) => <TabIcon name="Home" color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="chat"
+          options={{
+            title: 'Chat',
+            headerTitle: 'Chat',
+            tabBarLabel: 'Chat',
+            tabBarBackground: () => (
+              <View style={styles.tabBarBackground}>
+                <BlurView intensity={20} tint="dark" style={styles.blurView} />
+              </View>
+            ),
+            tabBarIcon: ({ color }) => <TabIcon name="MessageCircle" color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="metrics"
+          options={{
+            title: 'Metrics',
+            headerTitle: 'Metrics',
+            tabBarLabel: 'Metrics',
+            tabBarIcon: ({ color }) => <TabIcon name="BarChart2" color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="more"
+          options={{
+            title: 'More',
+            headerTitle: 'More',
+            tabBarLabel: 'More',
+            tabBarIcon: ({ color }) => <TabIcon name="MoreHorizontal" color={color} />,
+          }}
+          listeners={{
+            tabPress: (e: EventArg<"tabPress", true>) => {
+              // Prevent default navigation
+              e.preventDefault();
+              // Show side menu
+              setIsSideNavVisible(true);
+            },
+          }}
+        />
+      </Tabs>
+    </>
   );
 }
 

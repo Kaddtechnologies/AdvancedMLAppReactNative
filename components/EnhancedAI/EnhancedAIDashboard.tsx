@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, ScrollView } from 'react-native';
+import { View, TouchableOpacity, ScrollView, TextStyle } from 'react-native';
 import StyledText from '../ui/StyledText';
 import { Colors } from '../../constants/Colors';
 import AIMonitoringDashboard from './AIMonitoringDashboard';
@@ -79,10 +79,10 @@ const TabButton: React.FC<TabButtonProps> = ({ title, isActive, onPress }) => (
     <StyledText
       variant="body"
       weight={isActive ? 'medium' : 'regular'}
-      style={[
-        styles.tabButtonText,
-        isActive ? styles.activeTabButtonText : null
-      ]}
+      style={{
+        ...styles.tabButtonText,
+        ...(isActive ? styles.activeTabButtonText : {})
+      } as TextStyle}
     >
       {title}
     </StyledText>

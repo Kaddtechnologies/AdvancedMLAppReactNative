@@ -1,20 +1,20 @@
 {
   "expo": {
-    "name": "advancedmlappreactnative",
+    "name": "AI Trainer",
     "slug": "advancedmlappreactnative",
-    "version": "2.0.23",
+    "version": "2.0.45",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": false,
     "scheme": "advancedmlappreactnative",
     "android": {
-      "versionCode": 27,
-      "package": "com.deacons.admin.app",
+      "versionCode": 49,
+      "package": "com.deacon.admin.maui.app",
       "googleServicesFile": "./credentials.json"
     },
     "ios": {
-      "bundleIdentifier": "com.deacons.admin.app"
+      "bundleIdentifier": "com.deacon.admin.maui.app"
     },
     "extra": {
       "eas": {
@@ -33,22 +33,14 @@
       "expo-font",
       "expo-secure-store",
       "expo-router",
+      "expo-splash-screen",
       [
         "sentry-expo",
         {
           "organization": "deacons-app",
           "project": "deacons-app-react-native",
-          "hooks": {
-            "postPublish": [
-              {
-                "file": "sentry-expo/upload-sourcemaps",
-                "config": {
-                  "organization": "deacons-app",
-                  "project": "deacons-app-react-native"
-                }
-              }
-            ]
-          }
+          "enableInExpoDevelopment": false,
+          "disableUploadSourceMaps": true
         }
       ]
     ],

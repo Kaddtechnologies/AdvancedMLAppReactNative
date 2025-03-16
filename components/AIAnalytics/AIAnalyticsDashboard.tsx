@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, ScrollView, ActivityIndicator, TouchableOpacity, TextStyle } from 'react-native';
 import { useAIAnalytics } from '../../hooks/useAIAnalytics';
 import styles from './styles/AIAnalyticsDashboardStyles';
 import FeedbackSummary from './FeedbackSummary';
@@ -45,10 +45,10 @@ const AIAnalyticsDashboard: React.FC = () => {
           <StyledText
             variant="body"
             weight={timeRange === range ? 'medium' : 'regular'}
-            style={[
-              styles.timeRangeButtonText,
-              timeRange === range ? styles.timeRangeButtonTextActive : null
-            ]}
+            style={{
+              ...styles.timeRangeButtonText,
+              ...(timeRange === range ? styles.timeRangeButtonTextActive : {})
+            } as TextStyle}
           >
             {range.charAt(0).toUpperCase() + range.slice(1)}
           </StyledText>

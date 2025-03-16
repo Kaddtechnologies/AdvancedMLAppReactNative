@@ -29,6 +29,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   onPress,
   instructions,
 }) => {
+  console.log('MetricCard rendering:', { title, value });
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
 
@@ -53,7 +54,13 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   }
 
   return (
-    <GradientCard style={[styles.container, style]} withShadow={true}>
+    <GradientCard
+      style={[styles.container, style]}
+      withShadow={true}
+      onLayout={() => {
+        console.log('MetricCard layout complete:', { title });
+      }}
+    >
       <View style={styles.header}>
         <StyledText variant="cardTitle" weight="medium">
           {title}

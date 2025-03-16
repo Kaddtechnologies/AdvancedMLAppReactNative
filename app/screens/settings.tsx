@@ -275,7 +275,7 @@ export default function SettingsScreen() {
 
           <GradientCard>
             {renderInfoItem('App Version', '1.0.5')}
-            {renderInfoItem('API Endpoint', 'https://deaconapi.myworkatcornerstone.com')}
+            {renderInfoItem('API Endpoint', 'https://deaconapidev.myworkatcornerstone.com')}
             {renderInfoItem('User ID', 'a6d3028d-a025-493f-a75a-8ee5e88ff52b')}
             {renderInfoItem('User', 'David Jones')}
           </GradientCard>

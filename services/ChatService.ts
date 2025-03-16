@@ -7,18 +7,24 @@ import * as Sentry from '@sentry/react-native';
 export interface Message {
   id: string;
   text: string;
-  timestamp: Date;
+  timestamp: string;
   isUser: boolean;
   status: 'sending' | 'sent' | 'error';
   conversationId: string;
+  metadata?: {
+    responseTime?: number;
+    testCategory?: string;
+    testSessionId?: string;
+  };
 }
 
 export interface Conversation {
   id: string;
   title: string;
   lastMessage?: string;
-  lastMessageTimestamp?: Date;
+  lastMessageTimestamp?: string;
   unreadCount: number;
+  messageCount: number;
 }
 
 export interface ChatRequestModel {
@@ -96,24 +102,11 @@ class ChatService {
         conversationId,
       };
 
-      const response = await fetch(`${this.baseUrl}/send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await FirebaseService.getAuthToken()}`,
-        },
-        body: JSON.stringify(requestModel),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
-
-      const data = await response.json();
+      const { data } = await apiClient.post(`${this.baseUrl}/send`, requestModel);
       return {
         id: data.id,
         text: data.message || data.text,
-        timestamp: new Date(data.timestamp),
+        timestamp: new Date(data.timestamp).toISOString(),
         isUser: false,
         status: 'sent' as const,
         conversationId,
@@ -132,20 +125,15 @@ class ChatService {
       const userId = await FirebaseService.getUid();
       if (!userId) throw new Error('User not authenticated');
 
-      const response = await fetch(
-        `${this.baseUrl}/history/${conversationId}?limit=${limit}&userId=${userId}`,
+      const { data } = await apiClient.get(
+        `${this.baseUrl}/history/${conversationId}`,
         {
-          headers: {
-            'Authorization': `Bearer ${await FirebaseService.getAuthToken()}`,
-          },
+          params: {
+            limit,
+            userId
+          }
         }
       );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch conversation history');
-      }
-
-      const data = await response.json();
       return data.map((msg: any) => ({
         id: msg.id,
         text: msg.text,
@@ -168,26 +156,28 @@ class ChatService {
       const userId = await FirebaseService.getUid();
       if (!userId) throw new Error('User not authenticated');
 
-      const response = await fetch(
-        `${this.baseUrl}/conversations?limit=${limit}&userId=${userId}`,
+      const { data } = await apiClient.get(
+        `${this.baseUrl}/conversations`,
         {
-          headers: {
-            'Authorization': `Bearer ${await FirebaseService.getAuthToken()}`,
-          },
+          params: {
+            limit,
+            userId
+          }
         }
       );
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch user conversations');
+      if (!Array.isArray(data)) {
+        console.error('Unexpected response format:', data);
+        throw new Error('Invalid response format from server');
       }
 
-      const data = await response.json();
       return data.map((conv: any) => ({
         id: conv.id,
         title: conv.title,
         lastMessage: conv.lastMessage,
-        lastMessageTimestamp: conv.lastMessageTimestamp ? new Date(conv.lastMessageTimestamp) : undefined,
+        lastMessageTimestamp: conv.lastMessageTimestamp ? new Date(conv.lastMessageTimestamp).toISOString() : undefined,
         unreadCount: conv.unreadCount || 0,
+        messageCount: conv.messageCount || 0,
       }));
     } catch (error) {
       console.error('Error fetching user conversations:', error);
@@ -208,20 +198,7 @@ class ChatService {
         title,
       };
 
-      const response = await fetch(`${this.baseUrl}/conversation`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await FirebaseService.getAuthToken()}`,
-        },
-        body: JSON.stringify(request),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create conversation');
-      }
-
-      const data = await response.json();
+      const { data } = await apiClient.post(`${this.baseUrl}/conversation`, request);
       return data.conversationId;
     } catch (error) {
       console.error('Error creating conversation:', error);
@@ -250,7 +227,7 @@ class ChatService {
         comments
       };
 
-      await apiClient.post('/api/Chat/feedback', request);
+      await apiClient.post(`${this.baseUrl}/feedback`, request);
     } catch (error) {
       Sentry.captureException(error, {
         tags: {

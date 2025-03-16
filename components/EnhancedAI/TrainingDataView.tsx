@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, ActivityIndicator } from 'react-native';
+import { View, ScrollView, ActivityIndicator, TextStyle } from 'react-native';
 import { useEnhancedAI } from '../../hooks/useEnhancedAI';
 import GradientCard from '../ui/GradientCard';
 import StyledText from '../ui/StyledText';
@@ -193,10 +193,10 @@ const QualityMetricItem = ({ name, score, description }: { name: string; score: 
       <StyledText variant="body" weight="medium" style={styles.qualityMetricName}>
         {name}
       </StyledText>
-      <StyledText variant="body" weight="medium" style={[
-        styles.qualityMetricScore,
-        { color: getScoreColor(score) }
-      ]}>
+      <StyledText variant="body" weight="medium" style={{
+        ...styles.qualityMetricScore,
+        color: getScoreColor(score)
+      } as TextStyle}>
         {(score * 10).toFixed(1)}/10
       </StyledText>
     </View>

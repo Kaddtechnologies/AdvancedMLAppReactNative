@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, ActivityIndicator } from 'react-native';
+import { View, ScrollView, ActivityIndicator, StyleProp, TextStyle } from 'react-native';
 import { useEnhancedAI } from '../../hooks/useEnhancedAI';
 import GradientCard from '../ui/GradientCard';
 import StyledText from '../ui/StyledText';
@@ -158,10 +158,10 @@ const ContinuousLearningView: React.FC = () => {
                 <StyledText
                   variant="body"
                   weight="medium"
-                  style={[
-                    styles.improvementValue,
-                    { color: (value as number) > 0 ? '#4CAF50' : '#F44336' }
-                  ]}
+                  style={{
+                    ...styles.improvementValue,
+                    color: (value as number) > 0 ? '#4CAF50' : '#F44336'
+                  } as TextStyle}
                 >
                   {Math.abs(value as number).toFixed(2)}%
                 </StyledText>

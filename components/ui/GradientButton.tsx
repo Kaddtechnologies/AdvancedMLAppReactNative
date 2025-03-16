@@ -5,10 +5,12 @@ import {
   Text,
   ViewStyle,
   TextStyle,
-  ActivityIndicator
+  ActivityIndicator,
+  View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useColorScheme } from 'react-native';
+import { LucideIcon } from 'lucide-react-native';
 import { Colors } from '../../constants/Colors';
 import { BorderRadius, Typography } from '../../constants/Theme';
 
@@ -21,6 +23,8 @@ interface GradientButtonProps {
   loading?: boolean;
   variant?: 'primary' | 'secondary' | 'outline';
   size?: 'small' | 'medium' | 'large';
+  icon?: LucideIcon;
+  iconPosition?: 'left' | 'right';
 }
 
 export const GradientButton: React.FC<GradientButtonProps> = ({
@@ -32,22 +36,28 @@ export const GradientButton: React.FC<GradientButtonProps> = ({
   loading = false,
   variant = 'primary',
   size = 'medium',
+  icon: Icon,
+  iconPosition = 'left',
 }) => {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
 
   // Determine button size
   let buttonSize;
+  let iconSize;
   switch (size) {
     case 'small':
       buttonSize = styles.buttonSmall;
+      iconSize = 16;
       break;
     case 'large':
       buttonSize = styles.buttonLarge;
+      iconSize = 24;
       break;
     case 'medium':
     default:
       buttonSize = styles.buttonMedium;
+      iconSize = 20;
       break;
   }
 
@@ -55,28 +65,52 @@ export const GradientButton: React.FC<GradientButtonProps> = ({
   let buttonStyle;
   let buttonTextStyle;
   let gradientColors;
+  let iconColor;
 
   switch (variant) {
     case 'secondary':
       gradientColors = [colors.accentSecondary, colors.accentSecondary];
       buttonStyle = styles.buttonSecondary;
       buttonTextStyle = styles.textSecondary;
+      iconColor = Colors.light.text;
       break;
     case 'outline':
       gradientColors = ['transparent', 'transparent'];
       buttonStyle = styles.buttonOutline;
       buttonTextStyle = styles.textOutline;
+      iconColor = Colors.light.accent;
       break;
     case 'primary':
     default:
-      gradientColors = colors.buttonGradient.colors;
+      gradientColors = colors.primaryGradient.colors as [string, string];
       buttonStyle = styles.buttonPrimary;
       buttonTextStyle = styles.textPrimary;
+      iconColor = Colors.light.text;
       break;
   }
 
   // Apply opacity if disabled
   const opacity = disabled ? 0.5 : 1;
+
+  const renderContent = () => {
+    if (loading) {
+      return <ActivityIndicator color={colors.text} size="small" />;
+    }
+
+    const iconElement = Icon ? (
+      <View style={iconPosition === 'right' ? styles.iconRight : styles.iconLeft}>
+        <Icon size={iconSize} color={iconColor} />
+      </View>
+    ) : null;
+
+    return (
+      <View style={styles.contentContainer}>
+        {iconPosition === 'left' && iconElement}
+        <Text style={[styles.text, buttonTextStyle, textStyle]}>{title}</Text>
+        {iconPosition === 'right' && iconElement}
+      </View>
+    );
+  };
 
   return (
     <TouchableOpacity
@@ -91,11 +125,7 @@ export const GradientButton: React.FC<GradientButtonProps> = ({
         end={{ x: 1, y: 1 }}
         style={[styles.gradient, buttonStyle]}
       >
-        {loading ? (
-          <ActivityIndicator color={colors.text} size="small" />
-        ) : (
-          <Text style={[styles.text, buttonTextStyle, textStyle]}>{title}</Text>
-        )}
+        {renderContent()}
       </LinearGradient>
     </TouchableOpacity>
   );
@@ -121,6 +151,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
   },
+  contentContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconLeft: {
+    marginRight: 8,
+  },
+  iconRight: {
+    marginLeft: 8,
+  },
   buttonPrimary: {
     borderRadius: BorderRadius.medium,
   },
@@ -134,7 +175,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: Typography.fontFamily.primary,
-    fontWeight: Typography.fontWeights.medium,
+    fontWeight: '500',
     fontSize: Typography.fontSize.body,
     letterSpacing: Typography.letterSpacing.default,
   },

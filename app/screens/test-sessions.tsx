@@ -122,7 +122,7 @@ export default function TestSessionsScreen() {
   };
 
   // Get icon for session type
-  const getSessionTypeIcon = (type: TestSessionType): string => {
+  const getSessionTypeIcon = (type: TestSessionType): "flag" | "info-circle" | "refresh" | "database" | "sitemap" | "question-circle" => {
     switch (type) {
       case 'baseline':
         return 'flag';
