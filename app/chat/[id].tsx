@@ -4,9 +4,8 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
-  RefreshControl,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, Stack } from 'expo-router';
 import { useAppContext } from '../../contexts/AppContext';
 import GradientBackground from '../../components/ui/GradientBackground';
 import ChatBubble from '../../components/chat/ChatBubble';
@@ -31,21 +30,31 @@ export default function ChatScreen() {
   } = useAppContext();
 
   const [isAiTyping, setIsAiTyping] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [conversationTitle, setConversationTitle] = useState('');
 
   useEffect(() => {
     loadMessages();
+    loadConversationDetails();
   }, [id]);
+
+  const loadConversationDetails = async () => {
+    try {
+      const conversations = await ChatService.getUserConversations();
+      const currentConversation = conversations.find(conv => conv.id === id);
+      if (currentConversation) {
+        setConversationTitle(currentConversation.title);
+      }
+    } catch (error) {
+      console.error('Error loading conversation details:', error);
+    }
+  };
 
   const loadMessages = async () => {
     try {
-      setRefreshing(true);
       const messages = await ChatService.getConversationHistory(id as string);
       setActiveMessages(messages);
     } catch (error) {
       console.error('Error loading messages:', error);
-    } finally {
-      setRefreshing(false);
     }
   };
 
@@ -92,7 +101,7 @@ export default function ChatScreen() {
       // Scroll to bottom again
       flatListRef.current?.scrollToEnd({ animated: true });
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error sending message in chat/[id].tsx:', error);
       // Update user message status to error
       const errorMessage = {
         id: Date.now().toString(),
@@ -124,20 +133,23 @@ export default function ChatScreen() {
 
   return (
     <GradientBackground>
+      <Stack.Screen
+        options={{
+          title: conversationTitle || 'Chat',
+          headerStyle: {
+            backgroundColor: colors.background,
+          },
+          headerTintColor: colors.text,
+          headerShadowVisible: false,
+        }}
+      />
       <View style={styles.container}>
         <FlatList
           ref={flatListRef}
           data={activeMessages}
           renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => `message-${item.id}`}
           contentContainerStyle={styles.messageList}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={loadMessages}
-              tintColor={colors.accent}
-            />
-          }
           ListFooterComponent={renderTypingIndicator}
         />
         <ChatInput

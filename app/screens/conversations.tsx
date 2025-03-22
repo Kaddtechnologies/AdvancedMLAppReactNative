@@ -124,7 +124,7 @@ export default function ConversationsScreen() {
           >
             <Menu color={colors.text} size={24} />
           </TouchableOpacity>
-          <StyledText style={styles.title}>Conversations</StyledText>
+          {/* <StyledText style={styles.title}>Conversations</StyledText> */}
           <TouchableOpacity
             style={styles.newButton}
             onPress={handleNewConversation}

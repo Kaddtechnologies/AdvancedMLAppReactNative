@@ -59,9 +59,9 @@ export default function TabLayout() {
         <Tabs.Screen
           name="chat"
           options={{
-            title: 'Chat',
-            headerTitle: 'Chat',
-            tabBarLabel: 'Chat',
+            title: '',
+            headerTitle: 'Conversations',
+            tabBarLabel: 'Conversations',
             tabBarBackground: () => (
               <View style={styles.tabBarBackground}>
                 <BlurView intensity={20} tint="dark" style={styles.blurView} />

@@ -19,12 +19,15 @@ export interface Message {
 }
 
 export interface Conversation {
-  id: string;
-  title: string;
-  lastMessage?: string;
-  lastMessageTimestamp?: string;
   unreadCount: number;
-  messageCount: number;
+  lastMessage: any;
+  lastMessageTimestamp: any;
+  id: string;
+  userId: string;
+  title: string;
+  createdAt: string;
+  lastMessageAt: string;
+  isActive: boolean;
 }
 
 export interface ChatRequestModel {
@@ -112,7 +115,7 @@ class ChatService {
         conversationId,
       };
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error sending message to AI:', error);
       throw error;
     }
   }
@@ -173,11 +176,11 @@ class ChatService {
 
       return data.map((conv: any) => ({
         id: conv.id,
+        userId: conv.userId || userId,
         title: conv.title,
-        lastMessage: conv.lastMessage,
-        lastMessageTimestamp: conv.lastMessageTimestamp ? new Date(conv.lastMessageTimestamp).toISOString() : undefined,
-        unreadCount: conv.unreadCount || 0,
-        messageCount: conv.messageCount || 0,
+        createdAt: conv.createdAt ? new Date(conv.createdAt).toISOString() : new Date().toISOString(),
+        lastMessageAt: conv.lastMessageAt ? new Date(conv.lastMessageAt).toISOString() : new Date().toISOString(),
+        isActive: conv.isActive ?? true,
       }));
     } catch (error) {
       console.error('Error fetching user conversations:', error);
@@ -188,7 +191,7 @@ class ChatService {
   /**
    * Create a new conversation
    */
-  async createConversation(title: string): Promise<string> {
+  async createConversation(title: string): Promise<{ conversationId: string }> {
     try {
       const userId = await FirebaseService.getUid();
       if (!userId) throw new Error('User not authenticated');
@@ -199,9 +202,42 @@ class ChatService {
       };
 
       const { data } = await apiClient.post(`${this.baseUrl}/conversation`, request);
-      return data.conversationId;
+      return { conversationId: data.conversationId };
     } catch (error) {
       console.error('Error creating conversation:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a conversation
+   */
+  async deleteConversation(conversationId: string): Promise<void> {
+    try {
+      const userId = await FirebaseService.getUid();
+      if (!userId) throw new Error('User not authenticated');
+
+      await apiClient.delete(`${this.baseUrl}/delete/${conversationId}`, {
+        params: { userId }
+      });
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete all conversations for a user
+   */
+  async deleteAllConversations(userId: string): Promise<void> {
+    try {
+      if (!userId) throw new Error('User ID is required');
+
+      await apiClient.delete(`${this.baseUrl}/deleteall`, {
+        params: { userId }
+      });
+    } catch (error) {
+      console.error('Error deleting all conversations:', error);
       throw error;
     }
   }
