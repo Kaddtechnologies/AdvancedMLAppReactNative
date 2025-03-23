@@ -37,16 +37,17 @@ jobs:
           node-version: "18"
           cache: "npm"
 
-      - name: Install dependencies
-        run: |
-          npm ci
-          cd android
-          bundle install
+      # - name: Install dependencies
+      #   run: |
+      #     npm ci
+      #     cd android
+      #     bundle install
 
-      - name: Install Fastlane plugins
-        run: |
-          cd android
-          bundle exec fastlane add_plugin firebase_app_distribution
+      # - name: Install Fastlane plugins
+      #   run: |
+      #     cd android
+      #     bundle update fastlane
+      #     bundle exec fastlane add_plugin firebase_app_distribution
 
       - name: Decode Keystore
         env:
