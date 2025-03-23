@@ -9,7 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useEffect } from 'react';
 import { Drawer } from 'expo-router/drawer';
 import CustomDrawerContent from '../components/navigation/CustomDrawerContent';
-import { Home } from 'lucide-react-native';
+import { Brain, Compass, Settings, LineChart } from 'lucide-react-native';
 
 // Import ErrorBoundary from expo-router
 import { ErrorBoundary } from 'expo-router';
@@ -78,7 +78,38 @@ export default function RootLayout() {
               options={{
                 headerShown: false,
                 drawerLabel: 'Home',
-                drawerIcon: ({ color }) => <Home color={color} size={24} />,
+              }}
+            />
+            <Drawer.Screen
+              name="screens/ai-analytics"
+              options={{
+                title: 'AI Analytics',
+                drawerLabel: 'AI Analytics',
+                drawerIcon: ({ color }) => <LineChart color={color} size={24} />,
+              }}
+            />
+            <Drawer.Screen
+              name="screens/enhanced-ai"
+              options={{
+                title: 'Enhanced AI',
+                drawerLabel: 'Enhanced AI',
+                drawerIcon: ({ color }) => <Brain color={color} size={24} />,
+              }}
+            />
+            <Drawer.Screen
+              name="screens/explore"
+              options={{
+                title: 'Explore',
+                drawerLabel: 'Explore',
+                drawerIcon: ({ color }) => <Compass color={color} size={24} />,
+              }}
+            />
+            <Drawer.Screen
+              name="screens/settings"
+              options={{
+                title: 'Settings',
+                drawerLabel: 'Settings',
+                drawerIcon: ({ color }) => <Settings color={color} size={24} />,
               }}
             />
           </Drawer>

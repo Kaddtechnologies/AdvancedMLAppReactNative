@@ -18,6 +18,7 @@ import { useColorScheme } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import ChatService from '../../services/ChatService';
 import { format } from 'date-fns';
+import FirebaseService from 'services/FirebaseService';
 
 // Updated conversation interface to match backend model
 interface Conversation {
@@ -66,7 +67,7 @@ export default function ConversationsScreen() {
       // Add the new conversation to the list
       const newConversation: Conversation = {
         id: response.conversationId,
-        userId: 'current-user', // This should come from your auth context
+        userId: await FirebaseService.getUid() || '', // This should come from your auth context
         title,
         createdAt: new Date().toISOString(),
         lastMessageAt: new Date().toISOString(),
@@ -74,6 +75,7 @@ export default function ConversationsScreen() {
       };
 
       setConversations(prevConversations => [newConversation, ...prevConversations]);
+      // Use push navigation to stack the chat screen on top
       router.push(`/chat/${response.conversationId}`);
     } catch (error) {
       console.error('Error creating conversation:', error);
@@ -208,33 +210,29 @@ export default function ConversationsScreen() {
           </View>
         </View>
 
-        {isLoading ? (
+        {isLoading && conversations.length === 0 ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator color={colors.accent} />
-            <StyledText variant="bodySmall" style={styles.loadingText}>
-              Loading conversations...
-            </StyledText>
+            <ActivityIndicator color={colors.accent} size="large" />
+            <StyledText style={styles.loadingText}>Loading conversations...</StyledText>
           </View>
         ) : conversations.length === 0 ? (
-          <View style={styles.emptyState}>
-            <MessageSquarePlus size={48} color={colors.accentSecondary} />
-            <StyledText variant="body" style={styles.emptyStateText}>
-              No conversations yet
+          <View style={styles.emptyContainer}>
+            <StyledText style={styles.emptyText}>
+              No conversations yet. Start a new one!
             </StyledText>
             <GradientButton
-              title="Start New Chat"
+              title="New Conversation"
               onPress={createNewConversation}
-              style={styles.newChatButton}
-              size="small"
+              style={styles.newButton}
               icon={MessageSquarePlus}
             />
           </View>
         ) : (
           <FlatList
             data={conversations}
-            keyExtractor={item => `conversation-${item.id}`}
             renderItem={renderConversationItem}
-            contentContainerStyle={styles.conversationsList}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
           />
         )}
@@ -249,78 +247,81 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: Spacing.m,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: Spacing.l,
+    paddingVertical: Spacing.m,
+    marginBottom: Spacing.s,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   headerButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.medium,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: Spacing.s,
   },
-  conversationsList: {
+  listContent: {
     padding: Spacing.m,
   },
   conversationCard: {
-    marginBottom: Spacing.s,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    marginBottom: Spacing.m,
   },
   conversationContent: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.m,
   },
   conversationInfo: {
     flex: 1,
-    marginRight: Spacing.s,
+    marginRight: Spacing.m,
   },
   conversationTitle: {
-    marginBottom: 2,
+    marginBottom: Spacing.xs,
   },
   conversationTimestamp: {
-    color: Colors.dark.textSecondary,
+    opacity: 0.7,
   },
   conversationActions: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   deleteButton: {
-    padding: Spacing.s,
+    width: 36,
+    height: 36,
+    borderRadius: BorderRadius.medium,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: Spacing.s,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: Spacing.xl,
   },
   loadingText: {
-    marginTop: Spacing.s,
-    color: Colors.dark.textSecondary,
+    marginTop: Spacing.m,
+    opacity: 0.7,
   },
-  emptyState: {
+  emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: Spacing.xl,
   },
-  emptyStateText: {
+  emptyText: {
     textAlign: 'center',
-    marginTop: Spacing.m,
     marginBottom: Spacing.l,
-    color: Colors.dark.textSecondary,
+    opacity: 0.7,
   },
-  newChatButton: {
+  newButton: {
     minWidth: 200,
   },
 });

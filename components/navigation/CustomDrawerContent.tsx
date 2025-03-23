@@ -7,7 +7,6 @@ import {
 } from 'react-native';
 import {
   DrawerContentScrollView,
-  DrawerItemList,
   DrawerContentComponentProps,
 } from '@react-navigation/drawer';
 import { useColorScheme } from 'react-native';
@@ -46,9 +45,6 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
           <StyledText style={styles.title}>Advanced ML App</StyledText>
           <StyledText style={styles.subtitle}>AI-Powered Experience</StyledText>
         </View>
-
-        {/* Default drawer items */}
-        <DrawerItemList {...props} />
 
         {/* Divider */}
         <View style={[styles.divider, { backgroundColor: colors.accentSecondary }]} />

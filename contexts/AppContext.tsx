@@ -26,6 +26,7 @@ interface AppContextType {
   sharedInfo: any;
 
   // Actions
+  setIsLoading: (isLoading: boolean) => void;
   refreshTestSessions: () => Promise<void>;
   refreshMetricsHistory: () => Promise<void>;
   refreshSharedInfo: () => Promise<void>;
@@ -375,6 +376,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     metricsHistory,
     sharedInfo,
 
+    setIsLoading,
     refreshTestSessions,
     refreshMetricsHistory,
     refreshSharedInfo,

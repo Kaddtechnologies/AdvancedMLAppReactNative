@@ -1,23 +1,28 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity, Animated, Dimensions, Platform } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Animated, Dimensions, Platform, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
-import { X, MessageCircle } from 'lucide-react-native';
+import { X, MessageCircle, Plus, Trash2 } from 'lucide-react-native';
 import { format } from 'date-fns';
 import * as Haptics from 'expo-haptics';
 import { useColorScheme } from 'react-native';
 
 import StyledText from './StyledText';
 import GradientCard from './GradientCard';
+import GradientButton from './GradientButton';
 import { Colors } from '../../constants/Colors';
 import { Conversation } from '../../services/ChatService';
+import { Spacing } from '../../constants/Theme';
+import { useAppContext } from '../../contexts/AppContext';
 
 interface ConversationsDrawerProps {
   isVisible: boolean;
   onClose: () => void;
   conversations: Conversation[];
   onConversationPress: (conversation: Conversation) => void;
+  onDeleteConversation?: (conversationId: string) => void;
+  onNewConversation?: () => void;
 }
 
 const { width } = Dimensions.get('window');
@@ -28,10 +33,13 @@ export default function ConversationsDrawer({
   onClose,
   conversations,
   onConversationPress,
+  onDeleteConversation,
+  onNewConversation,
 }: ConversationsDrawerProps) {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
   const router = useRouter();
+  const { isLoading } = useAppContext();
 
   const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -50,104 +58,147 @@ export default function ConversationsDrawer({
           useNativeDriver: true,
         }),
       ]).start();
+      
+      // Trigger haptic feedback when drawer opens
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } else {
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: -DRAWER_WIDTH,
-          duration: 300,
+          duration: 250,
           useNativeDriver: true,
         }),
         Animated.timing(fadeAnim, {
           toValue: 0,
-          duration: 300,
+          duration: 250,
           useNativeDriver: true,
         }),
       ]).start();
     }
-  }, [isVisible]);
+  }, [isVisible, slideAnim, fadeAnim]);
 
-  const formatTimestamp = (timestamp?: string) => {
-    if (!timestamp) return '';
-    return format(new Date(timestamp), 'MMM d, h:mm a');
+  const handleConversationPress = (conversation: Conversation) => {
+    onConversationPress(conversation);
+    onClose();
+    
+    // Trigger haptic feedback on selection
+    Haptics.selectionAsync();
   };
 
-  if (!isVisible) return null;
+  const handleDeleteConversation = (conversationId: string) => {
+    if (onDeleteConversation) {
+      onDeleteConversation(conversationId);
+      
+      // Trigger haptic feedback on delete
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+  };
+
+  const handleNewConversation = () => {
+    if (onNewConversation) {
+      onNewConversation();
+      onClose();
+      
+      // Trigger haptic feedback on new conversation
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+  };
+
+  const renderConversationItem = ({ item }: { item: Conversation }) => (
+    <TouchableOpacity
+      style={styles.conversationItem}
+      onPress={() => handleConversationPress(item)}
+      activeOpacity={0.7}
+    >
+      <GradientCard style={styles.conversationCard}>
+        <View style={styles.conversationContent}>
+          <MessageCircle size={20} color={colors.accent} style={styles.conversationIcon} />
+          <View style={styles.conversationTextContainer}>
+            <StyledText style={styles.conversationTitle} numberOfLines={1}>
+              {item.title}
+            </StyledText>
+            <StyledText style={styles.conversationDate}>
+              {format(new Date(item.lastMessageAt), 'MMM d, yyyy')}
+            </StyledText>
+          </View>
+          {onDeleteConversation && (
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeleteConversation(item.id)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Trash2 size={16} color={colors.error} />
+            </TouchableOpacity>
+          )}
+        </View>
+      </GradientCard>
+    </TouchableOpacity>
+  );
+
+  if (!isVisible) {
+    return null;
+  }
 
   return (
-    <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
-      <TouchableOpacity
-        style={StyleSheet.absoluteFill}
-        activeOpacity={1}
-        onPress={onClose}
-      />
-      <Animated.View
-        style={[
-          styles.drawer,
-          {
-            transform: [{ translateX: slideAnim }],
-          },
-        ]}
-      >
-        <BlurView intensity={20} tint="dark" style={styles.blurView}>
-          <LinearGradient
-            colors={['rgba(30,30,30,0.9)', 'rgba(20,20,20,0.8)']}
-            start={colors.navBarGradient.start}
-            end={colors.navBarGradient.end}
-            style={styles.gradient}
-          >
-            <View style={styles.header}>
-              <StyledText style={styles.title}>Conversations</StyledText>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={onClose}
-              >
-                <X color={colors.text} size={24} />
-              </TouchableOpacity>
-            </View>
+    <Animated.View 
+      style={[
+        styles.overlay,
+        {
+          opacity: fadeAnim,
+          backgroundColor: `rgba(0, 0, 0, ${colorScheme === 'dark' ? 0.7 : 0.5})`,
+        },
+      ]}
+    >
+      <TouchableOpacity style={styles.overlayTouchable} onPress={onClose} activeOpacity={1}>
+        <Animated.View
+          style={[
+            styles.drawer,
+            {
+              transform: [{ translateX: slideAnim }],
+              backgroundColor: colors.cardBackgroundGradient.colors[0],
+            },
+          ]}
+        >
+          <TouchableOpacity activeOpacity={1}>
+            <View style={styles.drawerContent}>
+              <View style={styles.header}>
+                <StyledText style={styles.title}>Conversations</StyledText>
+                <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                  <X size={24} color={colors.text} />
+                </TouchableOpacity>
+              </View>
 
-            {conversations.map((conversation) => (
-              <TouchableOpacity
-                key={conversation.id}
-                style={styles.conversationItem}
-                onPress={() => {
-                  Haptics.selectionAsync();
-                  onConversationPress(conversation);
-                }}
-              >
-                <GradientCard style={styles.conversationCard}>
-                  <View style={styles.conversationIcon}>
-                    <MessageCircle color={colors.accent} size={24} />
-                  </View>
-                  <View style={styles.conversationContent}>
-                    <View style={styles.conversationHeader}>
-                      <StyledText style={styles.conversationTitle} numberOfLines={1}>
-                        {conversation.title}
-                      </StyledText>
-                      {conversation.unreadCount > 0 && (
-                        <View style={styles.unreadBadge}>
-                          <StyledText style={styles.unreadText}>
-                            {conversation.unreadCount}
-                          </StyledText>
-                        </View>
-                      )}
-                    </View>
-                    {conversation.lastMessage && (
-                      <StyledText style={styles.lastMessage} numberOfLines={2}>
-                        {conversation.lastMessage}
-                      </StyledText>
-                    )}
-                    {conversation.lastMessageTimestamp && (
-                      <StyledText style={styles.timestamp}>
-                        {formatTimestamp(conversation.lastMessageTimestamp)}
-                      </StyledText>
-                    )}
-                  </View>
-                </GradientCard>
-              </TouchableOpacity>
-            ))}
-          </LinearGradient>
-        </BlurView>
-      </Animated.View>
+              {onNewConversation && (
+                <GradientButton
+                  title="New Conversation"
+                  onPress={handleNewConversation}
+                  style={styles.newButton}
+                  icon={Plus}
+                  disabled={isLoading}
+                />
+              )}
+
+              {conversations.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <MessageCircle size={40} color={colors.textSecondary} />
+                  <StyledText style={styles.emptyText}>No conversations yet</StyledText>
+                  <StyledText style={styles.emptySubtext}>
+                    Start a new conversation to begin chatting
+                  </StyledText>
+                </View>
+              ) : (
+                <FlatList
+                  data={conversations}
+                  renderItem={renderConversationItem}
+                  keyExtractor={(item) => item.id}
+                  contentContainerStyle={styles.conversationsList}
+                  showsVerticalScrollIndicator={false}
+                />
+              )}
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+      </TouchableOpacity>
     </Animated.View>
   );
 }
@@ -159,96 +210,97 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     zIndex: 1000,
+  },
+  overlayTouchable: {
+    flex: 1,
   },
   drawer: {
     position: 'absolute',
     top: 0,
     left: 0,
-    bottom: 0,
     width: DRAWER_WIDTH,
-    overflow: 'hidden',
+    height: '100%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 2,
+      height: 0,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  blurView: {
+  drawerContent: {
     flex: 1,
-  },
-  gradient: {
-    flex: 1,
-    padding: 20,
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
-    paddingTop: Platform.OS === 'ios' ? 40 : 20,
+    paddingHorizontal: Spacing.l,
+    paddingBottom: Spacing.m,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
   },
   closeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 5,
+  },
+  newButton: {
+    marginHorizontal: Spacing.l,
+    marginBottom: Spacing.l,
+  },
+  conversationsList: {
+    paddingHorizontal: Spacing.l,
+    paddingBottom: 100,
   },
   conversationItem: {
-    marginBottom: 12,
+    marginBottom: Spacing.m,
   },
   conversationCard: {
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  conversationIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
+    padding: 0,
+    overflow: 'hidden',
   },
   conversationContent: {
-    flex: 1,
-  },
-  conversationHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    padding: Spacing.m,
+  },
+  conversationIcon: {
+    marginRight: Spacing.m,
+  },
+  conversationTextContainer: {
+    flex: 1,
   },
   conversationTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    flex: 1,
-    marginRight: 8,
+    fontWeight: '500',
+    marginBottom: 2,
   },
-  unreadBadge: {
-    backgroundColor: Colors.dark.accent,
-    borderRadius: 12,
-    minWidth: 24,
-    height: 24,
+  conversationDate: {
+    fontSize: 12,
+    opacity: 0.6,
+  },
+  deleteButton: {
+    padding: 5,
+  },
+  emptyContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.xl,
   },
-  unreadText: {
-    fontSize: 12,
-    color: '#FFFFFF',
+  emptyText: {
+    fontSize: 18,
     fontWeight: '600',
+    marginTop: Spacing.l,
+    marginBottom: Spacing.s,
   },
-  lastMessage: {
+  emptySubtext: {
     fontSize: 14,
     opacity: 0.7,
-    marginBottom: 4,
-  },
-  timestamp: {
-    fontSize: 12,
-    opacity: 0.5,
+    textAlign: 'center',
   },
 });

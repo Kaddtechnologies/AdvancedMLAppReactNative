@@ -181,6 +181,9 @@ class ChatService {
         createdAt: conv.createdAt ? new Date(conv.createdAt).toISOString() : new Date().toISOString(),
         lastMessageAt: conv.lastMessageAt ? new Date(conv.lastMessageAt).toISOString() : new Date().toISOString(),
         isActive: conv.isActive ?? true,
+        unreadCount: conv.unreadCount ?? 0,
+        lastMessage: conv.lastMessage ?? null,
+        lastMessageTimestamp: conv.lastMessageTimestamp ?? null
       }));
     } catch (error) {
       console.error('Error fetching user conversations:', error);
@@ -238,6 +241,34 @@ class ChatService {
       });
     } catch (error) {
       console.error('Error deleting all conversations:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new conversation with a default title
+   */
+  async createNewConversation(): Promise<Conversation> {
+    try {
+      const userId = await FirebaseService.getUid();
+      if (!userId) throw new Error('User not authenticated');
+
+      const title = `New Chat ${new Date().toLocaleDateString()}`;
+      const { conversationId } = await this.createConversation(title);
+      
+      return {
+        id: conversationId,
+        userId,
+        title,
+        createdAt: new Date().toISOString(),
+        lastMessageAt: new Date().toISOString(),
+        isActive: true,
+        unreadCount: 0,
+        lastMessage: null,
+        lastMessageTimestamp: null
+      };
+    } catch (error) {
+      console.error('Error creating new conversation:', error);
       throw error;
     }
   }

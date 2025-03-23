@@ -4,8 +4,9 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useAppContext } from '../../contexts/AppContext';
 import GradientBackground from '../../components/ui/GradientBackground';
 import ChatBubble from '../../components/chat/ChatBubble';
@@ -15,12 +16,14 @@ import { Spacing } from '../../constants/Theme';
 import { Colors } from '../../constants/Colors';
 import { useColorScheme } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { ArrowLeft } from 'lucide-react-native';
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
   const flatListRef = useRef<FlatList>(null);
+  const router = useRouter();
 
   const {
     activeMessages,
@@ -141,6 +144,14 @@ export default function ChatScreen() {
           },
           headerTintColor: colors.text,
           headerShadowVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <ArrowLeft color={colors.text} size={24} />
+            </TouchableOpacity>
+          ),
         }}
       />
       <View style={styles.container}>
@@ -172,5 +183,9 @@ const styles = StyleSheet.create({
   typingContainer: {
     padding: Spacing.m,
     alignItems: 'flex-start',
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 8,
   },
 });

@@ -71,6 +71,7 @@ export const Colors = {
     tint: '#007AFF',
     tabIconDefault: '#ccc',
     tabIconSelected: '#007AFF',
+    error: '#FF3B30',
   },
   // For this app, dark mode will be the same as light mode since the design is dark-themed
   dark: {
@@ -113,6 +114,7 @@ export const Colors = {
     tint: '#0A84FF',
     tabIconDefault: '#666',
     tabIconSelected: '#0A84FF',
+    error: '#FF453A',
   },
 };
 

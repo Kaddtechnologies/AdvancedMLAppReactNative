@@ -160,18 +160,17 @@ export default function DashboardScreen() {
 
 // Helper function to get the appropriate icon for each metric
 function getMetricIcon(metricTitle: string, color: string) {
-  const iconProps = { size: 20, color };
   switch (metricTitle) {
     case 'Personalization Score':
-      return <Icons.Brain {...iconProps} />;
+      return Icons.Brain;
     case 'Information Recall':
-      return <Icons.MessageSquare {...iconProps} />;
+      return Icons.MessageSquare;
     case 'Contextual Relevance':
-      return <Icons.Activity {...iconProps} />;
+      return Icons.Activity;
     case 'Conversation Naturalness':
-      return <Icons.Zap {...iconProps} />;
+      return Icons.Zap;
     default:
-      return <Icons.Activity {...iconProps} />;
+      return Icons.Activity;
   }
 }
 
