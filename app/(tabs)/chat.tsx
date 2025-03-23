@@ -111,7 +111,7 @@ export default function ConversationsScreen() {
           onPress: async () => {
             try {
               setIsDeleting(true);
-              await ChatService.deleteAllConversations('current-user'); // Replace with actual user ID
+              await ChatService.deleteAllConversations(await FirebaseService.getUid()); // Replace with actual user ID
               setConversations([]);
             } catch (error) {
               console.error('Error deleting all conversations:', error);

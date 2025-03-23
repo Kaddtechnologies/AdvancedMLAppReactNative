@@ -203,12 +203,6 @@ export default function SettingsScreen() {
   return (
     <GradientBackground>
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <View style={styles.header}>
-          <StyledText variant="largeHeader" weight="semibold">
-            Settings
-          </StyledText>
-        </View>
-
         {/* App Settings */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -286,6 +280,11 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
+  customHeader: {
+    paddingHorizontal: Spacing.m,
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.m,
+  },
   container: {
     flex: 1,
   },

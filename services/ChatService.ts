@@ -106,13 +106,15 @@ class ChatService {
       };
 
       const { data } = await apiClient.post(`${this.baseUrl}/send`, requestModel);
+      console.log('AI response data:', data);
+      
       return {
         id: data.id,
         text: data.message || data.text,
-        timestamp: new Date(data.timestamp).toISOString(),
+        timestamp: new Date(data.createdAt || data.timestamp).toISOString(),
         isUser: false,
         status: 'sent' as const,
-        conversationId,
+        conversationId: data.conversationId || conversationId,
       };
     } catch (error) {
       console.error('Error sending message to AI:', error);
@@ -137,13 +139,16 @@ class ChatService {
           }
         }
       );
+      
+      console.log('Raw conversation history data:', data);
+      
       return data.map((msg: any) => ({
         id: msg.id,
-        text: msg.text,
-        timestamp: new Date(msg.timestamp),
-        isUser: msg.isUser,
+        text: msg.message || msg.text, // Use message field if available, fallback to text
+        timestamp: new Date(msg.createdAt || msg.timestamp).toISOString(), // Use createdAt field if available
+        isUser: msg.role === 'user', // Convert role to boolean isUser
         status: 'sent',
-        conversationId,
+        conversationId: msg.conversationId || conversationId,
       }));
     } catch (error) {
       console.error('Error fetching conversation history:', error);
@@ -219,10 +224,9 @@ class ChatService {
     try {
       const userId = await FirebaseService.getUid();
       if (!userId) throw new Error('User not authenticated');
-
-      await apiClient.delete(`${this.baseUrl}/delete/${conversationId}`, {
-        params: { userId }
-      });
+        
+      // The API endpoint expects conversationId in the URL path and doesn't need a request body
+      await apiClient.post(`${this.baseUrl}/delete/${conversationId}`);
     } catch (error) {
       console.error('Error deleting conversation:', error);
       throw error;
@@ -235,8 +239,9 @@ class ChatService {
   async deleteAllConversations(userId: string): Promise<void> {
     try {
       if (!userId) throw new Error('User ID is required');
-
-      await apiClient.delete(`${this.baseUrl}/deleteall`, {
+     console.log('Deleting all conversations for user:', userId);
+      // The API endpoint expects userId as a query parameter, not in the request body
+      await apiClient.post(`${this.baseUrl}/deleteall`, null, {
         params: { userId }
       });
     } catch (error) {

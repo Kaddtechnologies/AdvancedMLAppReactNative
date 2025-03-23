@@ -18,6 +18,37 @@ export default function ScreenLayout() {
         },
         presentation: 'modal',
       }}
-    />
+    >
+      <Stack.Screen
+        name="settings"
+        options={{
+          headerTitle: 'Settings',
+        }}
+      />
+      <Stack.Screen
+        name="ai-analytics"
+        options={{
+          headerTitle: 'AI Analytics',
+        }}
+      />
+      <Stack.Screen
+        name="enhanced-ai"
+        options={{
+          headerTitle: 'Enhanced AI',
+        }}
+      />
+      <Stack.Screen
+        name="explore"
+        options={{
+          headerTitle: 'Explore',
+        }}
+      />
+      <Stack.Screen
+        name="conversations"
+        options={{
+          headerTitle: 'Conversations',
+        }}
+      />
+    </Stack>
   );
 }

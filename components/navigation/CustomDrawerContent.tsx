@@ -17,10 +17,10 @@ import { Brain, Compass, Settings, LineChart } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
 const menuItems = [
-  { title: 'AI Analytics', icon: LineChart, route: '/screens/ai-analytics' },
-  { title: 'Enhanced AI', icon: Brain, route: '/screens/enhanced-ai' },
-  { title: 'Explore', icon: Compass, route: '/screens/explore' },
-  { title: 'Settings', icon: Settings, route: '/screens/settings' },
+  { title: 'AI Analytics', icon: LineChart, route: '/ai-analytics' },
+  { title: 'Enhanced AI', icon: Brain, route: '/enhanced-ai' },
+  { title: 'Explore', icon: Compass, route: '/explore' },
+  { title: 'Settings', icon: Settings, route: '/settings' },
 ];
 
 export default function CustomDrawerContent(props: DrawerContentComponentProps) {

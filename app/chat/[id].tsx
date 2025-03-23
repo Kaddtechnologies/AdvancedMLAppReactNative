@@ -55,7 +55,17 @@ export default function ChatScreen() {
   const loadMessages = async () => {
     try {
       const messages = await ChatService.getConversationHistory(id as string);
-      setActiveMessages(messages);
+      console.log('Loaded messages:', messages);
+      
+      // Sort messages by timestamp in ascending order (earliest first)
+      const sortedMessages = [...messages].sort((a, b) => {
+        const dateA = new Date(a.timestamp);
+        const dateB = new Date(b.timestamp);
+        return dateA.getTime() - dateB.getTime();
+      });
+      
+      console.log('Sorted messages:', sortedMessages);
+      setActiveMessages(sortedMessages);
     } catch (error) {
       console.error('Error loading messages:', error);
     }
@@ -63,9 +73,12 @@ export default function ChatScreen() {
 
   const handleSend = async (text: string) => {
     try {
+      // Generate a unique ID for the user message
+      const messageId = `user-${Date.now()}`;
+      
       // Add user message immediately
       const userMessage: Message = {
-        id: Date.now().toString(),
+        id: messageId,
         text,
         timestamp: new Date().toISOString(),
         isUser: true,
@@ -86,19 +99,28 @@ export default function ChatScreen() {
       // Send message using ChatService
       const response = await ChatService.sendMessage(text, id as string);
 
-      // Update user message status
-      userMessage.status = 'sent';
-      addMessage(userMessage);
-
-      // Add AI message
+      // Update user message status in the current messages array
+      const updatedUserMessage = activeMessages.map(msg => 
+        msg.id === messageId ? { ...msg, status: 'sent' as const } : msg
+      );
+      
+      // Set the updated messages array with the user's message status updated
+      setActiveMessages(updatedUserMessage);
+      
+      // Add AI message with a unique ID
       const aiMessage: Message = {
-        ...response,
+        id: `ai-${Date.now()}`,
+        text: response.text,
+        timestamp: response.timestamp,
+        isUser: false,
         status: 'sent' as const,
+        conversationId: response.conversationId,
       };
 
       // Trigger haptic feedback for AI response
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
+      // Add the AI message to the conversation
       addMessage(aiMessage);
 
       // Scroll to bottom again
@@ -107,7 +129,7 @@ export default function ChatScreen() {
       console.error('Error sending message in chat/[id].tsx:', error);
       // Update user message status to error
       const errorMessage = {
-        id: Date.now().toString(),
+        id: `error-${Date.now()}`,
         text,
         timestamp: new Date().toISOString(),
         isUser: true,
@@ -159,7 +181,7 @@ export default function ChatScreen() {
           ref={flatListRef}
           data={activeMessages}
           renderItem={renderMessage}
-          keyExtractor={(item) => `message-${item.id}`}
+          keyExtractor={(item) => `${item.isUser ? 'user' : 'ai'}-${item.id}-${item.timestamp}`}
           contentContainerStyle={styles.messageList}
           ListFooterComponent={renderTypingIndicator}
         />

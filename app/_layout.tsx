@@ -1,6 +1,6 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
-import { useColorScheme, View, Text, ActivityIndicator, LogBox } from 'react-native';
+import { View, Text, ActivityIndicator, LogBox } from 'react-native';
 import { Colors } from '../constants/Colors';
 import { StatusBar } from 'expo-status-bar';
 import { AppProvider } from '../contexts/AppContext';
@@ -29,7 +29,8 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme() ?? 'dark';
+  // Force dark mode by ignoring the system color scheme
+  const colorScheme = 'dark';
   const colors = Colors[colorScheme];
 
   useEffect(() => {
@@ -53,7 +54,7 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DarkTheme}>
+      <ThemeProvider value={DarkTheme}>
         <AppProvider>
           <Drawer
             screenOptions={{
@@ -81,39 +82,43 @@ export default function RootLayout() {
               }}
             />
             <Drawer.Screen
-              name="screens/ai-analytics"
+              name="ai-analytics"
               options={{
                 title: 'AI Analytics',
                 drawerLabel: 'AI Analytics',
                 drawerIcon: ({ color }) => <LineChart color={color} size={24} />,
+                headerLeft: () => null, // This will be overridden by the Stack navigator
               }}
             />
             <Drawer.Screen
-              name="screens/enhanced-ai"
+              name="enhanced-ai"
               options={{
                 title: 'Enhanced AI',
                 drawerLabel: 'Enhanced AI',
                 drawerIcon: ({ color }) => <Brain color={color} size={24} />,
+                headerLeft: () => null, // This will be overridden by the Stack navigator
               }}
             />
             <Drawer.Screen
-              name="screens/explore"
+              name="explore"
               options={{
                 title: 'Explore',
                 drawerLabel: 'Explore',
                 drawerIcon: ({ color }) => <Compass color={color} size={24} />,
+                headerLeft: () => null, // This will be overridden by the Stack navigator
               }}
             />
             <Drawer.Screen
-              name="screens/settings"
+              name="settings"
               options={{
                 title: 'Settings',
                 drawerLabel: 'Settings',
                 drawerIcon: ({ color }) => <Settings color={color} size={24} />,
+                headerLeft: () => null, // This will be overridden by the Stack navigator
               }}
             />
           </Drawer>
-          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+          <StatusBar style="light" />
         </AppProvider>
       </ThemeProvider>
     </GestureHandlerRootView>

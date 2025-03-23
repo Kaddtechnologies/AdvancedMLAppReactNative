@@ -5,32 +5,32 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.0015144">
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.0008906">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="1: Switch to android build lane" time="0.0006722">
+      <testcase classname="fastlane.lanes" name="1: Switch to android build lane" time="0.0008511">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="2: Switch to android determine_release_name lane" time="0.0006602">
+      <testcase classname="fastlane.lanes" name="2: Switch to android determine_release_name lane" time="0.0010455">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="3: gradlew.bat assembleRelease --parallel --max-workers=4 --profile" time="112.1894245">
+      <testcase classname="fastlane.lanes" name="3: gradlew.bat assembleRelease --parallel --max-workers=4 --profile" time="42.9102003">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="4: Switch to android find_latest_apk lane" time="0.0009709">
+      <testcase classname="fastlane.lanes" name="4: Switch to android find_latest_apk lane" time="0.0013399">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="5: firebase_app_distribution" time="100.9057949">
+      <testcase classname="fastlane.lanes" name="5: firebase_app_distribution" time="113.044364">
         
       </testcase>
     

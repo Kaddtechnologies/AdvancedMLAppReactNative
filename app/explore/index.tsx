@@ -63,12 +63,6 @@ export default function ExploreScreen() {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <StyledText style={styles.title}>Explore</StyledText>
-          <StyledText style={styles.subtitle}>
-            Discover resources and tools to enhance your AI experience
-          </StyledText>
-        </View>
 
         <View style={styles.cardsContainer}>
           {exploreItems.map((item, index) => (

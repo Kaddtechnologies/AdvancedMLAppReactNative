@@ -138,15 +138,12 @@ export default function ConversationsScreen() {
   return (
     <GradientBackground>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <StyledText style={styles.headerTitle}>Conversations</StyledText>
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => setIsDrawerVisible(true)}
-          >
-            <Menu color={colors.text} size={24} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={() => setIsDrawerVisible(true)}
+        >
+          <Menu color={colors.text} size={24} />
+        </TouchableOpacity>
 
         {loading && conversations.length === 0 ? (
           <View style={styles.loadingContainer}>
@@ -165,6 +162,7 @@ export default function ConversationsScreen() {
                 showsVerticalScrollIndicator={false}
                 refreshing={refreshing}
                 onRefresh={handleRefresh}
+                style={styles.list}
               />
             )}
 
@@ -211,11 +209,19 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     padding: 8,
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 20,
+    left: Spacing.l,
+    zIndex: 10,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: Platform.OS === 'ios' ? 80 : 40, // Add padding for the menu button
+  },
+  list: {
+    paddingTop: Platform.OS === 'ios' ? 80 : 40, // Add padding for the menu button
   },
   listContent: {
     padding: Spacing.l,
@@ -282,6 +288,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: Spacing.xl,
+    paddingTop: Platform.OS === 'ios' ? 80 : 40, // Add padding for the menu button
   },
   emptyTitle: {
     fontSize: 22,

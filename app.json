@@ -2,14 +2,14 @@
   "expo": {
     "name": "AI Trainer",
     "slug": "advancedmlappreactnative",
-    "version": "2.0.45",
+    "version": "2.0.46",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": false,
     "scheme": "advancedmlappreactnative",
     "android": {
-      "versionCode": 49,
+      "versionCode": 50,
       "package": "com.deacon.admin.maui.app",
       "googleServicesFile": "./credentials.json"
     },

@@ -160,18 +160,22 @@ export default function DashboardScreen() {
 
 // Helper function to get the appropriate icon for each metric
 function getMetricIcon(metricTitle: string, color: string) {
-  switch (metricTitle) {
-    case 'Personalization Score':
-      return Icons.Brain;
-    case 'Information Recall':
-      return Icons.MessageSquare;
-    case 'Contextual Relevance':
-      return Icons.Activity;
-    case 'Conversation Naturalness':
-      return Icons.Zap;
-    default:
-      return Icons.Activity;
-  }
+  const IconComponent = (() => {
+    switch (metricTitle) {
+      case 'Personalization Score':
+        return Icons.Brain;
+      case 'Information Recall':
+        return Icons.MessageSquare;
+      case 'Contextual Relevance':
+        return Icons.Activity;
+      case 'Conversation Naturalness':
+        return Icons.Zap;
+      default:
+        return Icons.Activity;
+    }
+  })();
+  
+  return <IconComponent color={color} size={24} />;
 }
 
 // Helper function to get instructions for each metric
